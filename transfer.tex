@@ -1,0 +1,257 @@
+\documentclass[12pt]{article}
+\input{packages-and-defs}
+
+\begin{document}
+\input{title}
+
+\includepdf[pages=-]{nami}
+
+\title{Inference Amortization for First Order \\Probabilistic Programs}
+\date{}
+\maketitle
+
+\vspace{-90pt}
+
+\section{Introduction}
+
+In this part of the report, I introduce the background knowledge, review the recent literature around amortized inference and present future directions for this avenue of research. 
+I also present a preliminary schedule for the rest of my DPhil programme.
+
+\section{Background and literature review}
+
+\subsection{Probabilistic machine learning}
+Probabilistic machine learning is a branch of machine learning which makes use of probabilistic modelling framework to reason about learning models and for incorporating uncertainty into that process \citep{Ghahramani2015}.
+Its major advantages are the ability to incorporate prior knowledge by make explicit modelling assumptions, ability to obtain well calibrated uncertainties and interpretability of the models that follows.
+The price we pay is often computationally expensive process of learning as well as the risk of model misspecification by making inaccurate assumptions what results in learning inaccurate models.
+
+Learning in probabilistic models boils down to the process called inference - determining the probability distribution of a quantity/information of interest based the prior belief and the data - which is the core problem in probabilistic machine learning.
+In the mathematical terms - our probabilistic model defines a joint distribution $p(x,y)$ over the hidden (or latent) $x$ and the observed random variables (RVs) $y$.
+The prior beliefs are encoded in the model as so called prior $p(x)$.
+The focal point of probabilistic inference is the posterior $p(x|y)$ - the probability distribution over the hidden RVs $x$ given the observed value of $y$.
+Bayes' Law, easily the most recognizable equation in bayesian statistics, dictates how to obtain the posterior $p(x|y) = p(x,y)/p(y)$.
+The challenging part of the entirety of probabilistic inference is estimating the so-called evidence $p(y)$ what requires performing or approximating the integration $\int p(x,y) \text{d}x$.
+
+This is however not the end of the story - 
+what we are actually interested in is the probability distribution over some quantity of interest which is usually a function of the latent variables $g=f(x)$, the probability distribution of interest may hence be expressed as $p(g)$.
+Often we only seek a point estimate, i.e. the expected value of that function under the posterior $\mu_g=\E_{g \sim p(g)}[g]=\E_{x \sim p(x|y)}[f(x)]$ what might be arbitrarily difficult.
+
+We do have efficient inference methods for certain classes of models, however we lack general purpose inference methods that would be efficient for all the models and that is what often stops us from formulating and attempting to use more complex probabilistic 
+models\footnote{In many of those cases inefficient inference implies that inference is infeasible at the scale we are interested in.}.
+
+One of the the major advantages of the probabilistic framework is the interpretability it offers.
+It is a sought after characteristic, especially in the highly regulated domains such as medicine, jurisprudence, finance and autonomous operation of robots, most notably - autonomous driving.
+
+\subsection{Probabilistic programming}
+Probabilistic programming is an effort which focuses on creating, or modifying existing, programming languages to allow the users to define probabilistic models in a flexible manner and run inference on them.
+The goal is to abstract away the process of inference and disentangle the problems of modelling and inference.
+The model is specified by the user while the inference should be performed in automated way by the probabilistic programming backend inference engine with minimal input from the user.
+The motivation behind this approach is to allow users with deep domain knowledge, but without the expertise in inference, to use the probabilistic modelling tools.
+
+\todo{modularity}
+
+To achieve that we need general purpose inference algorithms.
+However even general purpose inference algorithm do not behave the same way on all models - their efficiency varies, some are better suited to particular class of models than others.
+An ideal probabilistic programming system should be able to automatically select the most efficient of the inference methods in its arsenal for the given problem, including not only all of the general purpose algorithms but also more bespoke ones.
+An example of such attempts is work by \citet{ZinkovEM} where they present a method to perform Expectation Maximization \citep{EM} if closed-form solutions can be statically discovered by the compiler.
+\todo{ask Rob for comments}
+
+There is a trade-off between the user's freedom of choosing the model and the efficiency of inference.
+This leads to a spectrum of probabilistic programming systems - some of them limit the expressivity of the model specification language by appropriate design of language semantics to allow the use of an inference method particularly effective for this constrained class of models, while others strive to provide unconstrained expressivity at the cost of inference performance.
+For this work the most relevant distinction of this kind is into the systems that focus on models equivalent in expressivity to Bayesian Networks (Bayes Nets, BNs), such as Stan \citep{Stan}, BUGS \citep{WinBUGS,BUGSproject} and its cousin JAGS \citep{JAGS}, or to Graphical Models (GMs) such as Infer.NET \citep{InferNET}, and so-called `universal probabilistic programming languages` built on top of existing Turing-complete programming languages such as Anglican \citep{anglican}, Church \citep{GoodmanEtAl2008} and Venture \citep{venture}.
+The last category is also known as higher-order probabilistic programming languages because they allow stochastic recursion, as contrasted to first-order probabilistic programming languages which are limited to graphical models with finite and deterministic number of random variables.
+
+There is also an upsurge in development of so-called deep probabilistic programming languages such as Edward \citep{TranEtAl2016}, Pyro \citep{Pyro2018} and Probtorch \citep{Siddharth2017} which main focus is on stochastic variational inference for deep generative models and hence their expressivity is limited to Bayesian Networks.
+\todo{which one is it actually?}
+
+\todo{why there is so little in probabilistic programming for MRFs/undirected GMs? Infer.NET}
+
+% Some say that users should not be cheated \footnote{Personal conversations with Michael Osborne}.
+
+
+\subsection{Inference in probabilistic programming systems}
+Inference in probabilistic programming systems roughly divide into two broad categories: variational or Monte Carlo based methods.
+With a healthy dose of generalization - variational methods are generally not guaranteed to converge to the true posterior, but are relatively quick, whereas Monte Carlo methods are generally guaranteed to converge to the true posterior in the infinite time limit, but there is no guarantee on the rate of convergence to the posterior and the inference is usually slow.
+What is more in both cases inference needs to be started again from scratch whenever new set of observed variables (i.e. dataset) $y$ is obtained and we want to obtain a posterior for that dataset.  
+
+Many of the probabilistic programming systems with limited expressivity of the models does this to make the models amenable to particular classes of inference algorithms. 
+Best examples are STAN which expressivity is limited to Bayesian Networks with no discrete variables to be able to run use No-U-Turn-Sampler (NUTS) \citep{NUTS}, an improved version of Hamiltonian Monte Carlo (HMC) \citep{HMC}, or Infer.NET which is limited to graphical models to be able to use variational methods such as variational message passing \citep{variationalmessagepassing} and expectation propagation \citep{EP} algorithms.
+
+\todo{rewrite the paragraph below}
+\todo{not exactness but if we want to be able to reason or quantify our error, unlike variational methods where we simply cannot bound or estimate the error}
+If we are after inference with guarantees of exactness we have to resort to Monte Carlo methods.
+However there exist applications for which MC methods are not fast enough to run inference at the required pace, in some cases close to real-time.
+Examples of such domains include finance, autonomous robot control and real-time medical diagnostics.
+In all of them well-calibrated uncertainty quantification is of crucial importance.
+Inference amortization is one of the possible solutions for this problem.
+
+
+\subsection{Inference amortization}
+Inference amortization is a method which allows to significantly accelerate run-time inference, wherein one looks to ``compile away'' the cost of inference
+across different possible datasets
+by learning an artifact that can be used to assist the inference process
+at run time for a given dataset
+\citep{StuhlmullerEtAl2013, KingmaWelling2013, ritchie2016deep, PaigeWood2016, LeEtAl2016, LeEtAl2017, MaddisonEtAl2017, NaessethEtAl2017}.
+
+Typically, this amortization
+artifact takes the form of a parametrized proposal, $q(x ; \varphi(y))$, which takes
+in data $y$ and regresses these to proposal parameters $\varphi(y)$, generally using
+a deep neural network.
+For consistency with the literature and to avoid clutter, we will often
+use the shorthand $q(x|y)$ to represent this \emph{inference network}.
+Though the exact process varies with context,
+the inference network is usually trained either by drawing latent-data
+sample pairs from a fixed joint distribution
+$p(x,y)$~\citep{ritchie2016deep,PaigeWood2016,LeEtAl2016}, or 
+as part of a stochastic variational inference scheme~\citep{HoffmanEtAl2013,KingmaWelling2013,RezendeEtAl2014},
+our work focuses mostly on the former of the two settings.
+Once trained, it provides an efficient means of approximately
+sampling from the posterior of a particular dataset, e.g. using importance sampling.
+
+This approach allows us to utilize the high run-time performance of neural networks within the probabilistic modelling framework. 
+Importantly we are not sacrificing the interpretability offered by the probabilistic framework.
+
+% DESIGN
+Inference amortization requires several design decisions that we elaborate on below:\\
+\todo{can I call this variational family?}
+\todo{get notation below from our NaMI paper about sets of $\prod_i q_i(x_i)$}
+1. The variational family, i.e. factorization of our approximate posterior $q(x|y):=q(x)=$\\
+2. The density estimator: typically a parametric distribution or a more flexible density estimator for each one of the factors $q_i$\\
+3. The function approximator: typically a neural network regressing parameters for each of the factors $q_i$\\
+
+% In terms of automating the guide program generation there are multiple choices to be made and hence multiple aspects to be automated, going from the top to the bottom:\\
+% 1. the variational family (mean-field, autoregressive or more structured conditional independence assumptions for the inference network i.e. the graphical model for the inference network)\\
+% 2. neural network architecture for each of the factors in the inference network\\
+% 3. the parametric distribution or a different type of neural density estimator\\
+
+\subsubsection*{Variational family}
+There (mean-field, autoregressive or more structured conditional independence assumptions for the inference network i.e. the graphical model for the inference network)
+
+Our work constituting the first part of this report explores the first design decision -
+we introduce Natural Minimal Inverse (NaMI) algorithm which given a graphical model of the generative model, 
+i.e. set of conditional independence assumptions, it returns a factorization of $q(x|y)$ that
+does not introduce any conditional independence assumptions that were not present in the
+generative model.
+
+
+
+\todo{do people add auxiliary RVs that are later marginalized like $\hat{y}$ suggested here at the bottom \url{http://pyro.ai/examples/_static/img/ss_vae_zoo.png}?}
+
+\subsubsection*{Density estimator}
+At the moment most of the approaches are using parametric families as the final density estimator
+
+\subsubsection*{Density estimator}
+
+
+
+
+\subsection{Automating inference amortization}
+Methodology
+A good starting point for an attack on that problem is to limit the range of the models we will be able to run inference amortization on. One way to limit the range of models is to limit them to the finite-cardinality graphical models and attempt to invert their structure to guide the architecture of the neural network. That line of research was started by \citet{PaigeWood2016} and serves as our starting point that we plan to build upon.
+
+
+https://arxiv.org/pdf/1610.05735.pdf use the same ordering for their guide program as for the generative model as well as the same parametric family
+they also have some sort of optimization algorithm 
+
+Tom
+>Unfortunately, there are two key stumbling blocks that often make it difficult for this idealized view of the Bayesian machine learning approach to be realized in practice. Firstly, a process known as Bayesian inference is required to solve the specified problems. This is typically a challenging task, closely related to integration, which is often computationally intensive to solve.
+
+In terms of settings in which amortized inference is pursued there are 3 that should be named: 
+Bayesian Networks (BN) or Graphical Models (GM), i.e. models with deterministic number of random variables (RVs); 
+Deep Generative Models (DGMs) such as VAEs,
+Universal Probabilistic Programming.
+
+\subsection{Amortized Monte Carlo Integration}
+
+
+
+
+
+\section{Research proposal}
+\todo{is it all right if I use first person in the research proposal?}
+There are several possible extensions and improvements to the existing inference amortization frameworks and systems. 
+Below I list a few research directions that I am in good position to pursue.
+They vary in size, but each could yield a workshop or conference publication, some of them might end up being combined in a single paper for the purpose of publication.
+I will provide more thorough description of each below.
+The list consists of the following projects\\
+\textbf{A} \quad Amortized Monte Carlo Integration\\
+\textbf{B} \quad probabilistic programming semantics for integration\\
+\textbf{C} \quad utility of neural density estimators for amortized inference\\
+\textbf{D} \quad picking an order of variable elimination for NaMI method in a data-driven, model-specific way in the inference compilation setting\\
+\textbf{E} \quad better applications for NaMI\\
+\textbf{F} \quad better ways of sampling from the model for the purpose of inference amortization\\
+\textbf{G} \quad making use of the information about the deterministic computations in the Bayesian networks and probabilistic programs\\
+
+
+\subsubsection*{A \quad Amortized Monte Carlo Integration}
+I am currently working on project A, Amortized Monte Carlo Integration. 
+We already have preliminary results published at UAI workshop on Uncertainty in Deep Learning \citep{golinski2018uai} and at International Conference on Probabilistic Programming \citep{golinski2018probprog}. 
+Since this project is in further stage of the development more details about it will follow in the next section.
+ 
+
+\subsubsection*{B \quad Probabilistic programming semantics for integration}
+Project A naturally leads to project B, establishing semantics for performing integration in probabilistic programming systems.
+We present first thoughts and suggestions in \citep{golinski2018probprog}.
+The semantics we propose are based on the semantics and program transformations introduced by \citet{rainforth2016bopp}.
+More details will follow in the next section.
+
+
+\subsubsection*{C \quad Utility of neural density estimators for amortized inference}
+Project C revolves around using more flexible density estimators for the proposal distributions amortized inference produces.
+The most prevalent and challenging type of random variable to formulate a proposal for is a continuous variable with an unbounded support.
+Current practice is to use a flexible, multimodal distribution such as Mixture of Gaussians with a fixed number of components $K$.
+This choice may fail in several ways - 
+(1) there is no way for the proposal to match the true posterior if the posterior contains more than $K$ modes,
+(2) the individual modes might not be very well approximated by a Gaussian, e.g. when they are highly asymmetric,
+(3) the tails of the distribution might be heavier than those of Gaussian distribution.
+Any of those scenarios might easily lead to a large (or even infinite) variance of our estimator, and hence to decrease in its sample efficiency.
+An increasingly viable alternative to this approach is the growing family of flexible neural density estimation methods based on the idea of normalizing flow \citep{NFs}.
+To the best of our knowledge so far there were few attempts to utilize those in the context of inference amortization.
+Currently the major difficulty of using normalizing flows for this purpose lies in the fact that methods allow either fast probability density evaluation at some data point $y$ (which is necessary for training) or the ability to efficiently sample (which is necessary at runtime).
+There are some attempts to circumvent this issue such as ParallelWavenet \citep{ParallelWavenet}, but anecdotal evidence suggests that approach is difficult to tune and train.
+Although I do not know of any successful attack on this problem yet I still deem it worthy to evaluate the utility of neural density estimators for amortized inference and its effect on sample efficiency of the final estimates even if we are not yet able to realize wall-time efficiency improvements in this way yet.
+
+\subsubsection*{D \quad Data-driven variable elimination ordering for NaMI}
+Project D is a potential extension to the Natural Minimal Inverse (NaMI) method of inverting graphical models introduced by us in \citep{golinski2018uai}.
+NaMI algorithm is forced to choose among multiple possible orderings of variable elimination, each of them yielding a minimal faithful inverse.
+At the moment NaMI computes topological or reverse-topological sort orders, solves the draws between different orderings according to min-fill heuristic (i.e. minimizes the size of the cliques in the graph), computes two inverses and suggests to evaluate the performance of both.
+My idea is to look at the shape of the 
+
+
+\subsubsection*{E \quad Better applications for NaMI}
+Project E would focus on finding more convincing and applied models and examples to showcase the utility of the NaMI method, it can most probably be combined  
+
+
+\subsubsection*{F \quad Better methods of sampling for inference amortization}
+This would involve looking into how much data neural networks require to learn part of the domain.
+
+
+\subsubsection*{G \quad Deterministic inversion of first order probabilistic programs}
+making use of the information about the deterministic computations in the Bayesian networks and probabilistic programs\\
+
+
+
+
+\subsection{Preliminary schedule}
+
+The following is a rough schedule for the rest of my DPhil degree, the milestones are pieces of work I intend to complete for relevant machine learning conferences.
+
+\begin{table}[h!]
+\begin{tabular}{lp{11cm}}
+Present - October 2019         & Further work on projects ABC, possible submission to AIStats \\
+October 2018 - February 2019   & In case of rejection or delay further work on ABC for submission to ICML, or investigation of projects D and/or E \\
+February 2019 - May 2019       & Work on C or/and D depending on which one holds more promise (it might be feasible to execute both of them at the same time), submission of full work to NIPS or partial work to ICML workshop \\
+May 2019 - May 2020            & Revaluation of available avenues for research and starting a   \\
+June 2020 - October 2020       & Internship \\
+October 2020 - December 2020   & Writing up thesis
+\end{tabular}
+\end{table}
+
+
+
+
+
+\newpage 
+\bibliographystyle{plainnat}
+\bibliography{bibliography/bibliography} 
+
+\end{document}
