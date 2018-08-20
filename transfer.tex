@@ -61,12 +61,12 @@ For this work the most relevant distinction of this kind is into the systems tha
 The last category is also known as higher-order probabilistic programming languages because they allow stochastic recursion, as contrasted to first-order probabilistic programming languages which are limited to graphical models with finite and deterministic number of random variables.
 
 There is also an upsurge in development of so-called deep probabilistic programming languages such as Edward \citep{TranEtAl2016}, Pyro \citep{Pyro2018} and Probtorch \citep{Siddharth2017} which main focus is on stochastic variational inference for deep generative models and hence their expressivity is limited to Bayesian Networks.
-\todo{which one is it actually?}
-
-\todo{why there is so little in probabilistic programming for MRFs/undirected GMs? Infer.NET}
+\todo{this might be wrong, what is actually the class of models for those languages?}
+% \todo{why there is so little in probabilistic programming for MRFs/undirected GMs? Infer.NET}
 
 % Some say that users should not be cheated \footnote{Personal conversations with Michael Osborne}.
 
+\todo{describe what first order probabilistic program is}
 
 \subsection{Inference in probabilistic programming systems}
 Inference in probabilistic programming systems roughly divide into two broad categories: variational or Monte Carlo based methods.
@@ -86,11 +86,12 @@ Inference amortization is one of the possible solutions for this problem.
 
 
 \subsection{Inference amortization}
+
 Inference amortization is a method which allows to significantly accelerate run-time inference, wherein one looks to ``compile away'' the cost of inference
 across different possible datasets
 by learning an artifact that can be used to assist the inference process
 at run time for a given dataset
-\citep{StuhlmullerEtAl2013, KingmaWelling2013, ritchie2016deep, PaigeWood2016, LeEtAl2016, LeEtAl2017, MaddisonEtAl2017, NaessethEtAl2017}.
+\citep{StuhlmullerEtAl2013, VAE, ritchie2016deep, PaigeWood2016, LeEtAl2016, LeEtAl2017, FIVO, NaessethEtAl2017}.
 
 Typically, this amortization
 artifact takes the form of a parametrized proposal, $q(x ; \varphi(y))$, which takes
@@ -102,7 +103,7 @@ Though the exact process varies with context,
 the inference network is usually trained either by drawing latent-data
 sample pairs from a fixed joint distribution
 $p(x,y)$~\citep{ritchie2016deep,PaigeWood2016,LeEtAl2016}, or 
-as part of a stochastic variational inference scheme~\citep{HoffmanEtAl2013,KingmaWelling2013,RezendeEtAl2014},
+as part of a stochastic variational inference scheme~\citep{HoffmanEtAl2013,VAE,RezendeEtAl2014},
 our work focuses mostly on the former of the two settings.
 Once trained, it provides an efficient means of approximately
 sampling from the posterior of a particular dataset, e.g. using importance sampling.
@@ -111,20 +112,44 @@ This approach allows us to utilize the high run-time performance of neural netwo
 Importantly we are not sacrificing the interpretability offered by the probabilistic framework.
 
 % DESIGN
-Inference amortization requires several design decisions that we elaborate on below:\\
+Implementing inference amortization for a given problem requires several design decisions that we elaborate on below:\\
+1. The factorization of the approximate posterior $q(x|y)$: deciding on the graphical model $\mathcal{H}$ structure of the approximate posterior what implies it factorizes as $q(x|y)=\prod^N_iq_i(x_i\,|\,\text{Pa}_\mathcal{H}(x_i))$, this is equivalent to choosing the variational family\\
 \todo{can I call this variational family?}
-\todo{get notation below from our NaMI paper about sets of $\prod_i q_i(x_i)$}
-1. The variational family, i.e. factorization of our approximate posterior $q(x|y):=q(x)=$\\
-2. The density estimator: typically a parametric distribution or a more flexible density estimator for each one of the factors $q_i$\\
-3. The function approximator: typically a neural network regressing parameters for each of the factors $q_i$\\
+2. The density estimator: typically we have to decide on a parametric distribution for each one of the factors $q_i$, but we could use more flexible density estimators that do not constrain us to parametric distributions, e.g. normalizing flows \citep{RezendeMohamed2015} \\
+\todo{is there a better way to phrase this? e.g. MADE is considered a density estimator, but you still have to decide about the parametric distribution at the end, but in case of normalizing flows we don't}
+3. The function approximator: we need to decide how the parameters for the distribution or transformation in the density estimator above are determined using a function approximator, usually this boils down to deciding about the architecture of a neural network we are using for each factor $q_i$\\
 
 % In terms of automating the guide program generation there are multiple choices to be made and hence multiple aspects to be automated, going from the top to the bottom:\\
 % 1. the variational family (mean-field, autoregressive or more structured conditional independence assumptions for the inference network i.e. the graphical model for the inference network)\\
 % 2. neural network architecture for each of the factors in the inference network\\
 % 3. the parametric distribution or a different type of neural density estimator\\
 
-\subsubsection*{Variational family}
-There (mean-field, autoregressive or more structured conditional independence assumptions for the inference network i.e. the graphical model for the inference network)
+\subsubsection*{Factorization of the approximate posterior $q(x|y)$}
+The factorization of the approximate posterior $q(x|y)$ reflect the conditional independence assumptions between random variables we impose on the approximate posterior.
+The more assumptions we impose the easier the problem is computationally, but the less expressive our approximate posterior $q(x|y)$ becomes and hence we make a coarser approximation.
+The fewer assumption we impose the more expressive our approximate posterior $q(x|y)$ is, but it becomes more expensive to train and use.
+
+This creates a spectrum of the assumptions we can impose on the problem.
+On one end of this spectrum lies the one of coarsest approximations we can make called the mean field assumption - assuming that the posterior factorizes into individual factors for each random variable $x_i$ without any dependencies between them, $q(x|y)=\prod^N_iq_i(x_i\,|\,y)$.
+On the other end of this spectrum lies an autoregressive factorization which makes no assumptions since any joint distribution can always be factorized according to the probability chain rule $q(x|y)=\prod^N_iq_i(x_i\,|\,x_{<i},y)$.
+
+Our observation which motivated the work in the first part of this report \citep{Webb2018} was that if we impose more assumptions than those present in the generative model $p(x,y)$ we can make it impossible for our approximate posterior $q(x|y)$ to match the true posterior $p(x|y)$ no matter how flexible density estimator and how powerful function approximator we use.
+Even when our goal is not learning an accurate inference artifact but learning the model this effect is undesirable
+% as limited capacity of the inference artifact forces the learnt model to adjust to this inaccurate inference hence limiting the capacity of the model itself, 
+since because of the KL penalty term in the ELBO objective
+$\mathcal{L}(y,q,p)=\log p(y)-KL(q(x|y) || p(x|y)) \le \log p(y)$ \citep{VAE}, 
+optimizing under these assumptions tends to force $p$’s posterior to satisfy the factorizing assumptions of the variational family \citep{FIVO}.
+
+That observation and issues that follow from it prompted us to make use of the set of conditional independence assumptions in the generative model expressed in the form of a graphical model $\mathcal{G}$ to search for a maximal set of assumptions for the approximate posterior which would not introduce any assumptions not present in the generative model, and hence not limit the expressivity of $q$ any more than what is required to match the true posterior, but at the same time introducing as many assumptions as possible to make it less computationally expensive.
+This way our method allows us to identify the intermediate point on the scale introduced above which is chosen so that we introduce maximum number of assumptions without limiting the expressivity of the approximate posterior $q$ beyond what's required to capture the true posterior as dictated by the assumptions made in the generative model $p$.
+\todo{add some information how inverses were derived in the past}
+
+For the details of our method that we named NaMI for Natural Minimal I-map please see the first part of the report. 
+With a tiny bit of simplification - it takes a set of conditional independence assumptions in the generative model expressed in the form of a graphical model $\mathcal{G}$ as input and produces a set of assumptions for the approximate posterior in the form of a graphical model $\mathcal{H}$ as output.
+Once we have obtained $\mathcal{H}$, the next step is to use it to learn an inference network, $q_\psi(x|y)$, where $\psi$ are the parameters of the neural networks constituting the full inference network. 
+For this, we use the factorization given by $\mathcal{H}$, that is, $q_\psi(x|y)=\prod^N_i q_i(x_i\,|\,\text{Pa}_\mathcal{H}(x_i))$, where $\text{Pa}_\mathcal{H}(x_i)$ stands for parents of the node $x_i$ according to graph $\mathcal{H}$.
+For each factor $q_i(x_i\,|\,\text{Pa}(x_i))$, we must decide both the class of distributions for $x_i\,|\,\text{Pa}(x_i)$, and how the parameters for that class are calculated.
+Once learned, we can both sample from, and evaluate the density of, the inference network for a given dataset by considering each factor in turn.
 
 Our work constituting the first part of this report explores the first design decision -
 we introduce Natural Minimal Inverse (NaMI) algorithm which given a graphical model of the generative model, 
@@ -137,28 +162,43 @@ generative model.
 \todo{do people add auxiliary RVs that are later marginalized like $\hat{y}$ suggested here at the bottom \url{http://pyro.ai/examples/_static/img/ss_vae_zoo.png}?}
 
 \subsubsection*{Density estimator}
-At the moment most of the approaches are using parametric families as the final density estimator
+At the moment most of the approaches are using parametric families as the final density estimator 
 
-\subsubsection*{Density estimator}
-
-
+The most natural choice for the class of distributions for each factor is to use the same distribution family
 
 
-\subsection{Automating inference amortization}
-Methodology
-A good starting point for an attack on that problem is to limit the range of the models we will be able to run inference amortization on. One way to limit the range of models is to limit them to the finite-cardinality graphical models and attempt to invert their structure to guide the architecture of the neural network. That line of research was started by \citet{PaigeWood2016} and serves as our starting point that we plan to build upon.
+\subsubsection*{Function approximator}
 
 
-https://arxiv.org/pdf/1610.05735.pdf use the same ordering for their guide program as for the generative model as well as the same parametric family
-they also have some sort of optimization algorithm 
 
-Tom
->Unfortunately, there are two key stumbling blocks that often make it difficult for this idealized view of the Bayesian machine learning approach to be realized in practice. Firstly, a process known as Bayesian inference is required to solve the specified problems. This is typically a challenging task, closely related to integration, which is often computationally intensive to solve.
 
-In terms of settings in which amortized inference is pursued there are 3 that should be named: 
-Bayesian Networks (BN) or Graphical Models (GM), i.e. models with deterministic number of random variables (RVs); 
-Deep Generative Models (DGMs) such as VAEs,
-Universal Probabilistic Programming.
+\subsection{Automating inference amortization for first order probabilistic programs}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/diagram.pdf}
+  \caption{
+  Schematic diagram of inference amortization for first order probabilistic programs. 
+  Black elements refer to 
+  Original diagram courtesy of \citet{LeEtAl2016}.}
+  \label{fig:inf-amortization}
+\end{figure}
+\todo{describe the figure and tie it into the narrative}
+
+% Methodology
+% A good starting point for an attack on that problem is to limit the range of the models we will be able to run inference amortization on. One way to limit the range of models is to limit them to the finite-cardinality graphical models and attempt to invert their structure to guide the architecture of the neural network. That line of research was started by \citet{PaigeWood2016} and serves as our starting point that we plan to build upon.
+
+
+% https://arxiv.org/pdf/1610.05735.pdf use the same ordering for their guide program as for the generative model as well as the same parametric family
+% they also have some sort of optimization algorithm 
+% 
+% Tom
+% >Unfortunately, there are two key stumbling blocks that often make it difficult for this idealized view of the Bayesian machine learning approach to be realized in practice. Firstly, a process known as Bayesian inference is required to solve the specified problems. This is typically a challenging task, closely related to integration, which is often computationally intensive to solve.
+% 
+% In terms of settings in which amortized inference is pursued there are 3 that should be named: 
+% Bayesian Networks (BN) or Graphical Models (GM), i.e. models with deterministic number of random variables (RVs); 
+% Deep Generative Models (DGMs) such as VAEs,
+% Universal Probabilistic Programming.
 
 \subsection{Amortized Monte Carlo Integration}
 
@@ -190,9 +230,47 @@ Since this project is in further stage of the development more details about it 
 
 \subsubsection*{B \quad Probabilistic programming semantics for integration}
 Project A naturally leads to project B, establishing semantics for performing integration in probabilistic programming systems.
-We present first thoughts and suggestions in \citep{golinski2018probprog}.
-The semantics we propose are based on the semantics and program transformations introduced by \citet{rainforth2016bopp}.
-More details will follow in the next section.
+% We present first thoughts and suggestions in \citep{golinski2018probprog}.
+% The semantics we propose are based on the semantics and program transformations introduced by \citet{rainforth2016bopp}.
+Specifically, we consider 
+how one might support it in Anglican~\cite{tolpin2016design}.
+Based on the query macro \defopt of~\cite{rainforth2016bopp}, 
+we introduce \clj{defint}.  Like \defopt, \clj{defint} adjusts Anglican's
+standard query macro, \defquery, by providing an series of symbols as an additional input.
+The role of this input is to identify the variables in the program which
+are function parameters $\theta$.  The value of the 
+function $f(x;\theta)$ is then given by the output of the query.
+We can thus express our previous
+example as follows
+\vspace{-4pt}
+\begin{lstlisting}[basicstyle=\ttfamily\small,frame=none]
+(defint example [y] [$\theta$]
+ (let [x (sample (normal 0 1))
+       $\theta$ (sample (uniform-continuous -5 5))]
+  (observe (normal x 1) y)
+  (> x $\theta$)))
+\end{lstlisting}
+\vspace{-4pt}
+The conditional distribution of this query corresponds to the distribution
+$p(x|y)p(\theta)$, while its output represents $f(x;\theta)$.  It thus
+contains all the information we require to carry out AMCI by estimating
+gradients of $\mathcal{J}$ and $\mathcal{J}'$:
+we can sample from $p(x,y)p(\theta)$ and have evaluations of
+$f(x;\theta)$ at these points.  Therefore by coupling the AMCI approach
+with the inference compilation approach introduced for Anglican
+in~\cite{LeEtAl2016}, we have everything required for
+training an ``integration compilation'' artifact.
+
+The syntax used to identify which variables correspond to
+$\theta$ is necessary because
+a) we do not need to learn a proposal for $\theta$ and b) at test time, we need
+a way to fix the value of $\theta$.  The latter of this is simply dealt
+with using the maximum marginal likelihood transformation applied for \defopt
+in~\cite{rainforth2017thesis}.   This effectively removes the
+\sample statements for $\theta$, replacing them with identity functions
+and making $\theta$ an input to the program.  With this transformation and
+the appropriately adapted trained amortized proposals, we thus
+have a means of automatically applying AMCI at test time.
 
 
 \subsubsection*{C \quad Utility of neural density estimators for amortized inference}
@@ -204,7 +282,7 @@ This choice may fail in several ways -
 (2) the individual modes might not be very well approximated by a Gaussian, e.g. when they are highly asymmetric,
 (3) the tails of the distribution might be heavier than those of Gaussian distribution.
 Any of those scenarios might easily lead to a large (or even infinite) variance of our estimator, and hence to decrease in its sample efficiency.
-An increasingly viable alternative to this approach is the growing family of flexible neural density estimation methods based on the idea of normalizing flow \citep{NFs}.
+An increasingly viable alternative to this approach is the growing family of flexible neural density estimation methods based on the idea of normalizing flow \citep{RezendeMohamed2015}.
 To the best of our knowledge so far there were few attempts to utilize those in the context of inference amortization.
 Currently the major difficulty of using normalizing flows for this purpose lies in the fact that methods allow either fast probability density evaluation at some data point $y$ (which is necessary for training) or the ability to efficiently sample (which is necessary at runtime).
 There are some attempts to circumvent this issue such as ParallelWavenet \citep{ParallelWavenet}, but anecdotal evidence suggests that approach is difficult to tune and train.
@@ -240,7 +318,7 @@ The following is a rough schedule for the rest of my DPhil degree, the milestone
 Present - October 2019         & Further work on projects ABC, possible submission to AIStats \\
 October 2018 - February 2019   & In case of rejection or delay further work on ABC for submission to ICML, or investigation of projects D and/or E \\
 February 2019 - May 2019       & Work on C or/and D depending on which one holds more promise (it might be feasible to execute both of them at the same time), submission of full work to NIPS or partial work to ICML workshop \\
-May 2019 - May 2020            & Revaluation of available avenues for research and starting a   \\
+May 2019 - May 2020            & Reevaluation of available avenues for research and a new project \\
 June 2020 - October 2020       & Internship \\
 October 2020 - December 2020   & Writing up thesis
 \end{tabular}
