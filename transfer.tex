@@ -17,56 +17,77 @@
 In this part of the report, I introduce the background knowledge, review the recent literature around amortized inference and present future directions for this avenue of research. 
 I also present a preliminary schedule for the rest of my DPhil programme.
 
-\subsection{Automating inference amortization for first order probabilistic programs}
-\todo{describe the overall theme of the work}
+The main themes of this work are improving, extending and automating inference amortization for first order probabilistic programs.
+If any of these terms are unfamiliar to you, hold tight, we will introduce all of them in the next section.
 
-\todo{introduce what first order probabilstic programs are clearly}
-
+\todo{insert beginning of Section 2 from Brooks paper into the transfer}
+\todo{go through the reading group papers and make sure you include points from those}
+\todo{do we have a proof that if inverse Gm introduces aditional assumptions then we cannot match the true posterior? it might be in one of Brooks' or Stuhlmueller's papers}
+\todo{do we have solid argument we want want to tlimit the dimensionality of the factors? this might also be in one of Brooks' or Stuhlmueller's papers}
+\todo{on one pass look for opportunities to support the narrative with code snippet examples and diagrams, especially of GMs}
 
 \section{Background and literature review}
 
 \subsection{Probabilistic machine learning}
 Probabilistic machine learning is a branch of machine learning which makes use of probabilistic modelling framework to reason about learning models and for incorporating uncertainty into that process \citep{Ghahramani2015}.
-Its major advantages are the ability to incorporate prior knowledge by make explicit modelling assumptions, ability to obtain well calibrated uncertainties and interpretability of the models that follows.
-The price we pay is often computationally expensive process of learning as well as the risk of model misspecification by making inaccurate assumptions what results in learning inaccurate models.
+Its major advantages are the ability to incorporate prior knowledge by making explicit modelling assumptions, the ability to obtain well calibrated uncertainty estimates, and the interpretability of the models.
+The latter is these days a very sought after characteristic, especially as machine learning is starting to pervade the highly regulated domains such as medicine, jurisprudence, finance and autonomous operation of robots, most notably - autonomous driving.
+The price we pay for those advantages is the often computationally expensive process of learning as well as the risk of model misspecification by making inaccurate assumptions what results in learning inaccurate models.
 
 Learning in probabilistic models boils down to the process called inference - determining the probability distribution of a quantity/information of interest based the prior belief and the data - which is the core problem in probabilistic machine learning.
-In the mathematical terms - our probabilistic model defines a joint distribution $p(x,y)$ over the hidden (or latent) $x$ and the observed random variables (RVs) $y$.
-The prior beliefs are encoded in the model as so called prior $p(x)$.
-The focal point of probabilistic inference is the posterior $p(x|y)$ - the probability distribution over the hidden RVs $x$ given the observed value of $y$.
+In the mathematical terms - our probabilistic model defines a joint distribution $p(x,y)$ over the hidden (or latent) random variables (RVs) $x$ and the observed RVs $y$.
+The prior beliefs are encoded in the model as so called prior distribution $p(x)$.
+Most often focal point of probabilistic inference is determining the posterior $p(x|y)$ - the probability distribution over the hidden RVs $x$ conditioned on the observed value of $y$.
 Bayes' Law, easily the most recognizable equation in bayesian statistics, dictates how to obtain the posterior $p(x|y) = p(x,y)/p(y)$.
-The challenging part of the entirety of probabilistic inference is estimating the so-called evidence $p(y)$ what requires performing or approximating the integration $\int p(x,y) \text{d}x$.
+The challenging part of the entirety of probabilistic inference is estimating the so-called evidence $p(y)$ what requires performing or approximating the integral $\int p(x,y) \text{d}x$.
+Evaluating such high dimensional integrals can rarely be done analytically (except some special cases like linear gaussian models) and in general can be arbitrarily difficult.
+This is what fundamental reason for why Bayesian inference is difficult - it is tightly related to the fundamental challenge of performing high dimensional integration. 
+From now on when referring to `inference` we mean Bayesian inference, as contrasted to non probabilistic inference in other domains of machine learning.
 
 This is however not the end of the story - 
-what we are actually interested in is the probability distribution over some quantity of interest which is usually a function of the latent variables $g=f(x)$, the probability distribution of interest may hence be expressed as $p(g)$.
-Often we only seek a point estimate, i.e. the expected value of that function under the posterior $\mu_g=\E_{g \sim p(g)}[g]=\E_{x \sim p(x|y)}[f(x)]$ what might be arbitrarily difficult.
+what we are actually interested in is the probability distribution over some quantity of interest which is usually a function of the latent variables $g=f(x)$, e.g. a loss function.
+The probability distribution of interest may hence be denoted as $p_g(g)$.
+Often we only seek a point estimate, i.e. the expected value of that function under the posterior $\mu_g=\E_{g \sim p_g(g)}[g]=\E_{x \sim p(x|y)}[f(x)]$.
+
+\todo{potentially the right column from TAL's diagram}
+\todo{how to best denote the entire transformation above? look up Kosiorek's blog post}
 
 We do have efficient inference methods for certain classes of models, however we lack general purpose inference methods that would be efficient for all the models and that is what often stops us from formulating and attempting to use more complex probabilistic 
 models\footnote{In many of those cases inefficient inference implies that inference is infeasible at the scale we are interested in.}.
 
-One of the the major advantages of the probabilistic framework is the interpretability it offers.
-It is a sought after characteristic, especially in the highly regulated domains such as medicine, jurisprudence, finance and autonomous operation of robots, most notably - autonomous driving.
-
 \subsection{Probabilistic programming}
-Probabilistic programming is an effort which focuses on creating, or modifying existing, programming languages to allow the users to define probabilistic models in a flexible manner and run inference on them.
-The goal is to abstract away the process of inference and disentangle the problems of modelling and inference.
-The model is specified by the user while the inference should be performed in automated way by the probabilistic programming backend inference engine with minimal input from the user.
-The motivation behind this approach is to allow users with deep domain knowledge, but without the expertise in inference, to use the probabilistic modelling tools.
+Probabilistic programming is an effort which focuses on 
+(1) creating systems that allow its users to specify probabilistic models in a flexible manner 
+and 
+(2) running inference on them in an automated way.
+The way to achieve this is to abstract away the process of inference by disentangling it from the problem of modelling, which are usually quite tightly coupled.
+% The model is specified by the user while the inference should be performed in automated way by the probabilistic programming backend inference engine with minimal input from the user.
+Such approach carries several promises:
+(1) it enables users with deep domain knowledge, but without extensive expertise in inference to use or at least prototype in the probabilistic modelling framework without the necessity to work hand in hand with a statistician,
+(2) it allows for modularity and compositionality - the ability to perform probabilistic reasoning in complex, compound models consisting consisting of multiple exchangeable components.
 
-\todo{modularity}
+Defining a probabilistic model is done by specifying a joint probability distribution $p(x,y)$ using a combination of 
+(1) definitions of latent and observed random variables using probability distributions, 
+(2) deterministic transformation applied to the sampled values of those random variables, 
+and optionally (not all probabilistic programming languages (PPLs) allow that) 
+(3) deterministic or even stochastic control flow constructs.  
 
-To achieve that we need general purpose inference algorithms.
+To support automated inference in an unconstrained class of probabilistic models we need general purpose inference algorithms.
+There exist a few algorithms that support inference in such universal probabilistic programming languages, more about it in \autoref{sec:inference-prob-prog} 
 However even general purpose inference algorithm do not behave the same way on all models - their efficiency varies, some are better suited to particular class of models than others.
 An ideal probabilistic programming system should be able to automatically select the most efficient of the inference methods in its arsenal for the given problem, including not only all of the general purpose algorithms but also more bespoke ones.
-An example of such attempts is work by \citet{ZinkovEM} where they present a method to perform Expectation Maximization \citep{EM} if closed-form solutions can be statically discovered by the compiler.
+An example of such attempts is work by \citet{ZinkovEM} where they present a method to perform Expectation Maximization \citep{EM} if closed-form solutions can be statically discovered by the system compiler.
 \todo{ask Rob for comments}
 
-There is a trade-off between the user's freedom of choosing the model and the efficiency of inference.
-This leads to a spectrum of probabilistic programming systems - some of them limit the expressivity of the model specification language by appropriate design of language semantics to allow the use of an inference method particularly effective for this constrained class of models, while others strive to provide unconstrained expressivity at the cost of inference performance.
+Some criticism of the idea or about feasibility of probabilistic programming revolves around the feeling that it is a form of dishonesty to promise users they will be able to specify arbitrary probabilistic models, but not providing the ability to run efficient inference in all of these models.
+It is clear that there is a trade-off between the user's freedom of specifying the model and the efficiency of inference.
+This leads to a spectrum of probabilistic programming systems - some of them limit the expressivity of the model specification language by appropriate design of language semantics to allow the use of an inference method particularly effective for such constrained class of models, while others strive to provide unconstrained expressivity at the cost of inference performance.
 For this work the most relevant distinction of this kind is into the systems that focus on models equivalent in expressivity to Bayesian Networks (Bayes Nets, BNs), such as Stan \citep{Stan}, BUGS \citep{WinBUGS,BUGSproject} and its cousin JAGS \citep{JAGS}, or to Graphical Models (GMs) such as Infer.NET \citep{InferNET}, and so-called `universal probabilistic programming languages` built on top of existing Turing-complete programming languages such as Anglican \citep{anglican}, Church \citep{GoodmanEtAl2008} and Venture \citep{venture}.
-The last category is also known as higher-order probabilistic programming languages because they allow stochastic recursion, as contrasted to first-order probabilistic programming languages which are limited to graphical models with finite and deterministic number of random variables.
+Bayesian Networks and Graphical Models are ways to describe assumptions we make about the probability distribution over multiple random variables, to find out more have a look at \citep{KollerFriedman2009}.
+The last category is also known as the higher-order probabilistic programming languages because they allow stochastic recursion, as contrasted to first-order probabilistic programming languages which expressivity from the probabilistic modelling perspective is equivalent to graphical models, i.e. they have finite and deterministic number of random variables.
+This work, and particularly out contributions to amortized inference are mostly relevant to this class of models.
 
-There is also an upsurge in development of so-called deep probabilistic programming languages such as Edward \citep{TranEtAl2016}, Pyro \citep{Pyro2018} and Probtorch \citep{Siddharth2017} which main focus is on stochastic variational inference for deep generative models and hence their expressivity is limited to Bayesian Networks.
+Recently there is also an upsurge in development of so-called deep probabilistic programming languages such as Edward \citep{TranEtAl2016}, Pyro \citep{Pyro2018} and Probtorch \citep{Siddharth2017} which main focus is on stochastic variational inference for deep generative models and hence from the probabilistic modelling perspective their expressivity is limited to graphical models.
 \todo{this might be wrong, what is actually the class of models for those languages?}
 % \todo{why there is so little in probabilistic programming for MRFs/undirected GMs? Infer.NET}
 
@@ -74,7 +95,11 @@ There is also an upsurge in development of so-called deep probabilistic programm
 
 \todo{describe what first order probabilistic program is}
 
+
+
 \subsection{Inference in probabilistic programming systems}
+\label{sec:inference-prob-prog}
+
 Inference in probabilistic programming systems roughly divide into two broad categories: variational or Monte Carlo based methods.
 With a healthy dose of generalization - variational methods are generally not guaranteed to converge to the true posterior, but are relatively quick, whereas Monte Carlo methods are generally guaranteed to converge to the true posterior in the infinite time limit, but there is no guarantee on the rate of convergence to the posterior and the inference is usually slow.
 What is more in both cases inference needs to be started again from scratch whenever new set of observed variables (i.e. dataset) $y$ is obtained and we want to obtain a posterior for that dataset.  
