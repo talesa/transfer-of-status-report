@@ -96,14 +96,10 @@ Recently there is also an upsurge in development of so-called deep probabilistic
 
 % Some say that users should not be cheated \footnote{Personal conversations with Michael Osborne}.
 
-\todo{describe what first order probabilistic program is}
-
 
 
 \subsection{Inference in probabilistic programming systems}
 \label{sec:inference-prob-prog}
-
-\todo{should I add explanations of what bias and variance are here?}
 
 When discussing inference methods there is a variety of properties we are interested in.
 The three important ones that need defining are 
@@ -183,56 +179,57 @@ with respect to the posterior thanks to having good proposal distribution.
 This approach allows us to utilize the high run-time performance of neural networks 
 without sacrificing the interpretability offered by the probabilistic framework.
 
-\todo{tie this somehow}
-
-Once we have obtained $\mathcal{H}$, the next step is to use it to learn an inference network, $q_\eta(x|y)$, where $\eta$ are the parameters of the neural networks constituting the full inference network. 
-For this, we use the factorization given by $\mathcal{H}$, that is, $q_\psi(x|y)=\prod^N_i q_i(x_i\,|\,\text{Pa}_\mathcal{H}(x_i))$, where $\text{Pa}_\mathcal{H}(x_i)$ stands for parents of the node $x_i$ according to graph $\mathcal{H}$.
-For each factor $q_i(x_i\,|\,\text{Pa}(x_i))$, we must decide both the class of distributions for $x_i\,|\,\text{Pa}(x_i)$, and how the parameters for that class are calculated.
-Once learned, we can both sample from, and evaluate the density of, the inference network for a given dataset by considering each factor in turn.
-
-
-\section{Inference compilation}
-\label{sec:inf-comp}
-
-In this section we will focus on inference amoritzation in the inference compilation setting.
-
-\todo{actually more verbose description of amortized inference with the objective etc}
-
-\todo{make sure that somewhere you describe that in UPP you cannot have dependency inversion}
-
-\todo{modify this figure to only describe existing inference compilation}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.8\linewidth]{figures/diagram.pdf}
-  \caption{
-  Schematic diagram of inference compilation for probabilistic programs. 
-  % Black elements refer to 
-  Original diagram courtesy of \citet{LeEtAl2016}.}
-  \label{fig:inf-amortization}
-\end{figure}
-\todo{describe the figure and tie it into the narrative}
-\todo{overall my research agenda is to continue contributing to the automation of inference amortization along those 3 questions and other extensions like AMCI}
+% \todo{tie this somehow}
+% 
+% Once we have obtained $\mathcal{H}$, the next step is to use it to learn an inference network, $q_\eta(x|y)$, where $\eta$ are the parameters of the neural networks constituting the full inference network. 
+% For this, we use the factorization given by $\mathcal{H}$, that is, $q_\psi(x|y)=\prod^N_i q_i(x_i\,|\,\text{Pa}_\mathcal{H}(x_i))$, where $\text{Pa}_\mathcal{H}(x_i)$ stands for parents of the node $x_i$ according to graph $\mathcal{H}$.
+% For each factor $q_i(x_i\,|\,\text{Pa}(x_i))$, we must decide both the class of distributions for $x_i\,|\,\text{Pa}(x_i)$, and how the parameters for that class are calculated.
+% Once learned, we can both sample from, and evaluate the density of, the inference network for a given dataset by considering each factor in turn.
 
 
-
-
-\section{Inference compilation vs ASVI}
-
-In case of ASVI the model $p(x,y)$ is not fully specified by the user like in the inference compilation case
-when user provides the entire probabilistic program specifying the details of all of the stochastic and deterministic
-computation performed in the model.
-Instead, the user specifies the graphical model, i.e. factorization, of $p(x)$ and $p(y|x)$, 
-while the deterministic transformations of the sampled values are specified with a neural network with parameters $\theta$
-what is usually denoted as $p_\theta(y|x)$.
-
-The process of designing of the inference network is quite similar, but the more detailed our knowledge about the deterministic transformations inside the generative model the larger the opportunity we will be able to leverage it when designing an inference network.
-We touch upon this topic in \autoref{sec:design}.
+% \subsection{Inference compilation}
+% \label{sec:inf-comp}
+% 
+% In this section we will focus on inference amoritzation in the inference compilation setting.
+% 
+% \todo{actually more verbose description of amortized inference with the objective etc}
+% 
+% \todo{make sure that somewhere you describe that in UPP you cannot have dependency inversion}
+% 
+% \todo{modify this figure to only describe existing inference compilation}
+% 
+% \begin{figure}[t]
+%   \centering
+%   \includegraphics[width=0.8\linewidth]{figures/diagram.pdf}
+%   \caption{
+%   Schematic diagram of inference compilation for probabilistic programs. 
+%   % Black elements refer to 
+%   Original diagram courtesy of \citet{LeEtAl2016}.}
+%   \label{fig:inf-amortization}
+% \end{figure}
+% \todo{describe the figure and tie it into the narrative}
+% \todo{overall my research agenda is to continue contributing to the automation of inference amortization along those 3 questions and other extensions like AMCI}
 
 
 
 
-\section{Designing the inference network}
+% \subsection{Inference compilation vs ASVI}
+% 
+% In case of ASVI the model $p(x,y)$ is not fully specified by the user like in the inference compilation case
+% when user provides the entire probabilistic program specifying the details of all of the stochastic and deterministic
+% computation performed in the model.
+% Instead, the user specifies the graphical model, i.e. factorization, of $p(x)$ and $p(y|x)$, 
+% while the deterministic transformations of the sampled values are specified with a neural network with parameters $\theta$
+% what is usually denoted as $p_\theta(y|x)$.
+% 
+% The process of designing of the inference network in both settings is similar, 
+% but the more detailed our knowledge about the deterministic computation inside the generative model the larger is the opportunity we will be able to leverage it when designing an inference network.
+% We touch upon this topic in \autoref{sec:design}.
+
+
+
+
+\subsection{Designing the inference network}
 \label{sec:design}
 
 After we have decided on our model $p(x,y)$ in inference compilation or $p_\theta(x)$ and $p_\theta(y|x)$ in ASVI setting we need to design our inference network. 
@@ -305,7 +302,6 @@ The simplest choice one could make for the distribution of a random variable is 
 However, in many cases this distribution might not be flexible enough to match the true posterior well.
 For example, for the domain of $\mathbb{R}^d$ a mixture of gaussians is a more flexible choice than a single gaussian.
 
-These choices are often quite ad-hoc and sometimes the true posterior might not match any parametric distribution well.
 An alternative to using a parametric distribution might be a recently developed family of flexible density estimators called normalizing flows \citep{RezendeMohamed2015,IAF,MAF}.
 Instead requiring the distribution to have a closed form density expression normalizing flows take a sample $z$ from some tractable distribution, commonly standard normal, and transform it using a bijective (i.e. invertible) transformation $f: \mathbb{R} \mapsto \mathbb{R}$ (or series of such transformations) into a much more complex, possibly multi-modal, random variable $x=f(z)$.
 We can still evaluate the probability density at any given point $x$ since we are able to compute the determinant of the Jacobian and apply the change of variables formula between the source of randomness $z$ and the final variable $x$ according to 
@@ -340,7 +336,7 @@ Currently they are often addressed by the following parametric distributions, re
 When using either the parametric distribution or normalizing flow as the proposal we need to choose the function approximator that is used to determine the parameters of the distribution or the transformation $f$ in normalizing flow.
 In practice it amounts to choosing the architecture of a neural network.
 
-The probabilistic program specifies all of the deterministic transformations applied to the samples of the random variables in the model
+The probabilistic program specifies all of the deterministic transformations applied to the samples of the random variables in the generative model
 what creates an opportunity to leverage that information in designing the architecture of the neural network by attempting to invert the computation in the generative model \citep{TavaresEtAl2016,TavaresEtAl2017}.
 It is yet unclear if this approach will prove of practical use in the inference compilation setting.
 
@@ -370,268 +366,6 @@ Another possible route to automate the selection of the architecture would be to
 
 
 
-
-\subsection{Amortized Monte Carlo Integration}
-\label{sec:AMCI}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\linewidth]{figures/diagram.pdf}
-  \caption{
-  Schematic diagram of inference compilation for probabilistic programs. 
-  % Black elements refer to 
-  Original diagram courtesy of \citet{LeEtAl2016}.}
-  \label{fig:inf-amortization}
-\end{figure}
-\todo{describe the figure and tie it into the narrative}
-
-Bayesian modeling is rooted in the calculation of expectations:
-the eventual aim of modeling is typically to make a decision, or to construct
-predictions for unseen data, both of which take the form of an expectation under
-the posterior~\citep{robert2007bayesian}.  The aim of the vast majority
-of Bayesian inference problems can thus be summarized in the form of one or more
-expectations $\E_{p(x|y)}\! \left[f(x)\right]$, where $f(x)$ is a target function and
-$p(x|y)$ is the posterior distribution on $x$ for some data $y$, 
-which we typically only know up to a normalizing constant $p(y)$.  Sometimes $f(x)$
-is not known up front, or we care about many different $f(x)$, such
-that is convenient to just approximate $p(x|y)$ upfront, e.g. in the form of 
-Monte Carlo samples, and then later use this to calculate estimates, rather than
-address the target expectations directly.
-
-However, it is often the case in practice that a particular target function, or class of
-target functions, is known a priori.  
-It has been well established in the literature that in such \emph{target-aware}
-settings the aforementioned pipeline of first approximating $p(x|y)$ and then using this
-as a basis for calculating $\E_{p(x|y)} \left[f(x)\right]$ is 
-suboptimal as it ignores relevant information in
-$f(x)$~\citep{mcbook,lacoste2011losscalibrated}.
-
-Though there are many ways this relevant information can be 
-exploited~\cite{hesterberg1988advances,wolpert1991monte,oh1992adaptive,evans1995methods,cerou2007adaptive,cerou2012sequential,
-	de2005tutorial,lacoste2011losscalibrated,villen1994restart},
-these are not currently utilized in probabilistic programming; systems
-almost ubiquitously only target
-the conditional distribution.  Many 
-problems would thus benefit from extending the standard
-probabilistic programming framework to an
-\emph{integration programming} one which directly targets to the
-calculation of expectations.
-
-Here we focus on one particular setting in which
-such target-aware systems could prove useful: amortized 
-inference~\citep{ritchie2016deep,PaigeWood2016,LeEtAl2016}.
-Specifically, we introduce AMCI, a new approach 
-for \emph{amortizing Monte Carlo integration}, and show how
-it might be applied in a probabilistic programming system.  The AMCI
-estimator is based on importance sampling, but instead of relying
-self-normalization, it uses the ratio of two separate estimators.
-This allows it to achieve an arbitrary small error from single
-sample estimates at test time, given sufficient
-training and capacity of the amortization artifact.
-
-Although is strongly motivated by Bayesian settings,
-AMCI can be applied in any Monte Carlo integration setting.
-Moreover, because
-a generic integration can always be expressed
-as an expectation through importance sampling, AMCI
-allows amortizing integration more generally.
-
-%\todo[inline]{AG: Tom, do you think more than \citep{lacoste2011losscalibrated,cobb2018losscalibrated} 
-%as a reference in the line below is necessary? 
-%What other works are you thinking about?}
-%Although it is all too often overlooked, how to adjust for target-aware settings
-%has been well established in the fixed-dataset context \citep{hesterberg1988advances,wolpert1991monte,oh1992adaptive,evans1995methods,lacoste2011losscalibrated}.
-%In this paper, we extend these ideas to
-%\emph{amortized} inference settings \citep{StuhlmullerEtAl2013, KingmaWelling2013, ritchie2016deep, PaigeWood2016, LeEtAl2016, LeEtAl2017, MaddisonEtAl2017, NaessethEtAl2017}, wherein one looks to amortize the cost of inference
-%across different possible datasets
-%by learning an artifact that assists the inference process
-%at run time for a given dataset.
-
-% \section{Method}
-
-% Our first key contribution is in highlighting that the shortcomings of
-% existing amortized inference approach for target-aware problems: even if the
-% inference network manages to fully encapsulate the true posterior, the resulting
-% estimator is still sub-optimal.  
-
-% \vspace{-5pt}
-% \section{Amortized Monte Carlo Integration}
-% \label{sec:amci}
-
-AMCI varies from standard amortized inference approaches in that: 
-a) It operates in a target-aware fashion, incorporating
-information about $f(x)$ into the amortization artifacts, increasing the efficiency 
-at run time; b) Rather than
-relying on self-normalized importance sampling (SNIS), AMCI amortizes and employs two separate proposals for estimating
-the unnormalized target integral $\E_{p(x)}\!\left[f(x)p(y|x)\right]$ and the marginal
-likelihood $\E_{p(x)}\!\left[p(y|x)\right]$; and c)
-To account for cases in which multiple target functions may be
-of interest, AMCI allows for amortization of parametrized functions $f(x ; \theta)$
-by extending our target distribution
-with a pseudo prior $p(\theta)$.  
-
-%\vfill\clearpage
-
-\textbf{Estimator} \quad The AMCI estimator is based around
-taking the ratio of two 
-separate non-self-normalized importance sampling estimators.
-As each estimator can use a separate, individually tuned proposal, 
-each can produce an arbitrarily low error when
-$f(x)$ is either lower or upper bounded, allowing an arbitrary low
-error in the overall estimate.
-This is in contrast to standard SNIS, whose attainable 
-error is lower bounded 
-by $\E_{p(x|y)} [|f(x) - \E_{p(x|y)}[f(x)]|] ^2/N$
-where $N$ is the number of samples~\citep{mcbook}.
-
-To ensure all the samples are utilized for both expectations,
-the full AMCI estimator is given by
-\begin{flalign}
-\frac{\E_{p(x)}\!\left[f(x)p(y|x)\right]}{\E_{p(x)}\!\left[p(y|x)\right]}
-\! \approx \!
-\frac{ \frac{\alpha}{N} \sum_n^N \!\frac{f(x_n) p(x_n, y) }{q_1(x_n|y)} \!+\! \frac{1-\alpha}{M} \sum_m^M \!\frac{f(x_m^*) p(x_m^*, y)}{q_2(x_m^*|y)}}
-{\frac{\beta}{N} \sum_n^N \!\frac{p(x_n, y)}{q_1(x_n|y)} \!+\! \frac{1-\beta}{M} \sum_m^M \!\frac{p(x_m^*, y)}{q_2(x_m^*|y)}}
-% \label{eq:estimator-combination}
-\nonumber
-\end{flalign}
-where different sets of samples are drawn from 
-\mbox{$x_n \!\sim\! q_1(x|y)$} and $x_m^* \!\sim\! q_2(x|y)$ respectively,
-and $0 \!\le\! \alpha,\beta \!\le\! 1$.
-If we had direct access to the optimal proposals, 
-namely $q_1(x|y) \!\propto\! |f(x)|p(x|y)$ 
-and $q_2(x|y) \!\propto\! p(x|y)$ \citep{mcbook}, it would
-preferable to set $\alpha \!\!=\!\! 1$ and $\beta \!\!=\!\! 0$, leading to a zero-variance
-estimator.  However, in practice, our proposals will not be perfect and
-so using a convex combination of the two estimators allows us to
-make use of all the samples at negligible extra cost.  
-%It
-%can be shown that asymptotically optimal parameter settings are 
-%\mbox{$\alpha^* = N \big/ \left( (T-N) \frac{\Var[f(x_1) p(x_1,y)/q_1(x_1|y)]}{\Var[f(x_1^*) p(x_1^*,y)/q_2(x_1^*|y)]} + N \right)$}
-%and
-%\mbox{$\beta^*  = N \big/ \left( (T-N) \frac{\Var[p(x_1,y)/q_1(x_1|y)]}       {\Var[p(x_1^*,y)/q_2(x_1^*|y)]}          + N \right)$}.
-
- \textbf{Amortization} \quad
-To evaluate this estimator, AMCI needs to learn to amortize proposals $q_1$ and $q_2$.  
-These will take the form of a parametrized proposal, 
-$q(x ; \varphi(y))$, which takes
-in data $y$ and regresses these to proposal parameters 
-$\varphi(y)$, using a deep neural network 
-as per~\citep{ritchie2016deep,PaigeWood2016,LeEtAl2016}.
-Following \citep{PaigeWood2016}, our objective for amortizing $q_2$ is
-% distribution $p(x|y)$ is
-\begin{flalign}
-\mathcal{J}(\eta)
-&= \mathbb{E}_{p(y)}\left[D_{KL} \left[ p(x|y) \mid\mid q_2(x;\varphi_2(y; \eta)) \right] \right] \nonumber \\
-% &= \int D_{KL} \left[ p(x|y) \mid\mid q(x;\varphi(y; \eta)) \right] p(y)  \text{d}y \nonumber \\[3pt]
-% &= \int p(x,y) \log \frac{p(x|y)}{q(x;\varphi(y; \eta))} \, \text{d}x \, \text{d}y \nonumber \\[3pt]
-&=
-\mathbb{E}_{p(x,y)}\left[- \log q_2(x ;\varphi_2(y; \eta))\right] 
-+ \text{const wrt }\eta
-% \label{eq:inf-comp:original}
-\nonumber
-\end{flalign}
-This objective requires the ability to sample from $p(x,y)$ 
-and it can be optimized using gradient methods.
-
-\todo{explain what $\varphi_2$ is}
-
-For amortizing $q_1$, we need to adjust this target to incorporate the effect of the
-target function.  Further, when the target function is parameterized, i.e. $f(x;\theta)$,
-we further allow amortization over functions by introducing a pseudo-prior $p(\theta)$ which
-specifies which parameter values we wish to amortize over and their relative importance.
-	We thus use the following objective for amortizing $q_1$
-%Amortization over the space of targets requires modification to this objective
-% and to our inference network, e.g. by also passing function parameters $\theta$
-% as input, we can also amortize over 
-% to allow amortization of different
-% possible target functions, our inference network can now take in function parat
-%  now also needs to take function parameters $\theta$ as input if we want
-% to also amortize of different possible target functions.
-%AMCI seeks a choice of $\eta$ which performs well across possible datasets $y$ and values of $\theta$.
-%Hence it requires an expectation over $p(y)p(\theta)$ 
-%%rather than just over $p(y)$, as in Eq.~\eqref{eq:inf-comp:original}.
-%%This results in the following objective 
-\begin{align}
-&\mathcal{J}^{'}(\eta)
-=
-\mathbb{E}_{p(y)\,p(\theta)}\left[D_{KL} \left[ |f(x;\theta)| \, p(x|y) \mid\mid q_1(x;\varphi_1(y, \theta; \eta)) \right]\right] 
-\nonumber \\
-% &= \int D_{KL} \left[ |f(x;\theta)| \, p(x|y) \mid\mid q(x;\varphi(y, \theta; \eta)) \right] p(y) p(\theta) \, \text{d}y \, \text{d}\theta \nonumber \\[5pt]
-% &= \int p(x,y) p(\theta) \, f(x;\theta) \log \frac{f(x;\theta)p(x|y)}{q(x;\varphi(y, \theta; \eta))} \, \text{d}x \, \text{d}y \, \text{d}\theta \nonumber \\[5pt]
-&=
--\mathbb{E}_{p(x,y)\,p(\theta)}\left[-f(x; \theta) \log q_1(x ;\varphi_1(y, \theta; \eta))\right] + \text{const wrt }\eta
-\nonumber
-\end{align}
-This expectation is over a tractable joint distribution $p(x,y)p(\theta)$ 
-%and pseudo prior $p(\theta)$ as defined by a the modeller. 
-%The entire objective 
-and can also be optimized using gradient methods.
-
-AMCI needs to learn both $q_1(x|y)$ using $\mathcal{J}^{'}$ above, 
-as well as $q_2(x|y)$ using $\mathcal{J}$.
- % in Eq.~\eqref{eq:inf-comp:original}.
-Both objectives can be jointly optimized using the same samples from $p(x,y)$.
-
-
-\begin{figure}[t]
-	% \vspace{-10pt}
-  \centering
-	\begin{subfigure}[b]{0.9\textwidth}
-		\centering
-		\includegraphics[width=\textwidth]{figures/results_1d.pdf}
-		\captionsetup{justification=centering}
-		
-	\end{subfigure}
-	\caption{
-		Results of amortization experiments for parameterized integrand $f(x; \theta)$.
-		Rows represent examples for different values of $(y, \theta)$, respectively: $(-1, 1)$, $(-1.25, -0.5)$, $(-1.5, -2)$.
-		% Uncertainty bars in columns 2, 3 are estimated over a 1000 runs.
-		% Middle column errors are reported for 64 samples.
-		For AMCI the number of samples from both proposals was equal, i.e. $M=N$.
-		Columns respectively show: shapes of probability density functions, log mean error vs $\alpha$, 
-		log mean error vs log number of samples for optimal proposal ($\alpha = 1$) and for posterior proposal ($\alpha = 0$). \vspace{-12pt}
-	}
-	\label{fig:results_1d}
-\end{figure}
-
- \textbf{Experiment} \quad We demonstrate AMCI on an illustrative example
- and compare it with the SNIS estimator
- with the optimal proposal for approximating the posterior, further
- investigating the effects of varying $\alpha$ and $\beta$.
- % in Eq.~\eqref{eq:estimator-combination}.
-We use the following toy model:
-% \vspace{-20pt}
-\begin{align*}
-p(x) &= \mathcal{N}(x; 0, 1) &
-q(x|y) &= \mathcal{N}\left(x; \varphi(\eta, y, \theta) \right) \\
-p(y|x) &= \mathcal{N}(y; x, 1) &
-f(x; \theta) &= \mathds{1}_{x>\theta} &
-\end{align*} 
-% \vspace{-20pt}
-% \begin{array}
-% {$p(x) = \mathcal{N}(x; 0, 1)$};
-% {$p(y|x) = \mathcal{N}(y; x, 1)$};
-% {$q(x|y) = \mathcal{N}\left(x; \varphi(\eta, y, \theta) \right)$};
-% {$f(x; \theta) = \mathds{1}_{x>\theta}$};
-% {$\theta \sim \text{Uniform}[-5,5]$}.
-% \begin{array}
-% We constrain the range of $\theta$ to be between -5 and 5, and we should not expect good performance if we wish to use an inference network trained on this model to evaluate expectation with $f(x;\theta)$ with $\theta$ outside of this range.
-The posterior {$p(x|y) = \mathcal{N}(x; y/2, 1/2)$} and true value of
-$\mathbb{E}_{p(x|y)} \left[ f(x; \theta) \right] = 1-\Phi(\theta)$ can be determined analytically, where $\Phi$ is a standard normal cumulative density function.
-
-% \subsection{Results}
-Results are presented in Fig.~\ref{fig:results_1d}. 
-% The values of $y$ and $\theta$ plotted were chosen to be illustrative of the phenomena observed.
-We found that fixing $\beta=0$ universally results in the smallest error of the estimates and hence we do not plot results on varying $\beta$.
-AMCI performed better than SNIS when the optimal proposal differs from the posterior.
-In some cases, when the optimal proposal differs greatly from the posterior the error for AMCI are over an order of magnitude smaller than for SNIS, see the first row.
-However, when the optimal proposal is similar to the posterior, AMCI and SNIS give more similar performance.
-%The reason for this is that AMCI draws samples separately both from the optimal proposal and posterior what in this case is clearly wasteful.
-Here (third row) setting $\alpha < 1$ results in lower error.
-
-
-
-
 \section{Research proposal}
 There are several possible extensions and improvements to the existing inference amortization frameworks and systems. 
 Below I list a few research directions that I am in good position to pursue.
@@ -653,8 +387,10 @@ The list consists of the following themes and projects\\
 
 
 \subsubsection*{A \quad Amortized Monte Carlo Integration}
-I am currently working on project A, Amortized Monte Carlo Integration, described in \autoref{sec:AMCI}.
+I am currently working on project A, Amortized Monte Carlo Integration.
 We already have preliminary results published at UAI 2018 workshop on Uncertainty in Deep Learning \citep{golinski2018uai} and at International Conference on Probabilistic Programming 2018 \citep{golinski2018probprog} (without proceedings).
+\todo{update page}
+Please see page 22 for the copy of our UAI workshop paper.
 Current plan is to perform additional experiments to showcase the utility of the method, establish a process to tune the hyperparameters and submit the work to AIStats 2018, and in case of rejection to ICML 2019.
  
 % Since this project is in further stage of the development more details about it will follow in the next section.
@@ -750,11 +486,12 @@ October 2020 - December 2020   & Writing up thesis
 \end{table}
 
 
-
-
+\includepdf[pages=-]{amci}
 
 \newpage 
 \bibliographystyle{plainnat}
 \bibliography{bibliography/bibliography} 
+
+% \includepdf[pages=-]{supplementary}
 
 \end{document}
