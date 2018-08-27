@@ -10,7 +10,7 @@
 \date{}
 \maketitle
 
-\vspace{-90pt}
+\vspace{-50pt}
 
 \section{Introduction}
 
@@ -20,15 +20,10 @@ I also present a preliminary schedule for the rest of my DPhil programme.
 The main themes of this work are improving, extending and automating inference amortization for first order probabilistic programs.
 If any of these terms are unfamiliar to you, hold tight, we will introduce all of them in the next section.
 
-\todo{insert beginning of Section 2 from Brooks paper into the transfer}
-\todo{go through the reading group papers and make sure you include points from those}
-\todo{do we have a proof that if inverse Gm introduces aditional assumptions then we cannot match the true posterior? it might be in one of Brooks' or Stuhlmueller's papers}
-\todo{do we have solid argument we want want to tlimit the dimensionality of the factors? this might also be in one of Brooks' or Stuhlmueller's papers}
-\todo{on one pass look for opportunities to support the narrative with code snippet examples and diagrams, especially of GMs}
-\todo{prepare questions for Frank and Tom}
-\todo{do we train a prior in VAE}
-\todo{maybe do a page with notation like in Willie's dissertation?}
-\todo{refer to Improving, Extending and Automating -- proposals, AMCI, NaMI}
+% \todo{insert beginning of Section 2 from Brooks paper into the transfer}
+% \todo{go through the reading group papers and make sure you include points from those}
+% \todo{on one pass look for opportunities to support the narrative with code snippet examples and diagrams, especially of GMs}
+% \todo{refer to Improving, Extending and Automating -- proposals, AMCI, NaMI}
 
 \section{Background and literature review}
 
@@ -48,13 +43,11 @@ Evaluating such high dimensional integrals can rarely be done analytically (exce
 This is the fundamental reason for why Bayesian inference is difficult -- it is tightly related to the fundamental challenge of performing high dimensional integration. 
 From now on when referring to `inference` we mean Bayesian inference, as contrasted to non probabilistic inference in other domains of machine learning.
 
-This is not the end of the story -- 
-what we are actually interested in is the probability distribution over some quantity of interest which is usually a function of the latent variables $g=f(x)$, e.g. a loss function.
-The probability distribution of interest may hence be denoted as $p_g(g)$.
-Often we only seek a point estimate, i.e. the expected value of that function under the posterior $\mu_g=\E_{g \sim p_g(g)}[g]=\E_{x \sim p(x|y)}[f(x)]$.
-
-% \todo{potentially the right column from TAL's diagram}
-% \todo{how to best denote the entire transformation above? look up Kosiorek's blog post}
+% This is not the end of the story -- 
+Often the posterior, or samples representing the posterior, are just an intermediate goal to
+obtain the probability distribution over some quantity of interest which is a function of the latent variables $g=f(x)$, e.g. a loss function.
+The probability distribution of interest may hence be denoted as $p_g(g|y)$.
+Most often we only seek a point estimate, i.e. the expected value of that function under the posterior $\mu_g=\E_{g \sim p_g(g|y)}[g]=\E_{x \sim p(x|y)}[f(x)]$.
 
 We do have efficient inference methods for certain classes of models, however we lack general purpose inference methods that would be efficient for all the models and that is what often stops us from formulating and attempting to use more complex probabilistic 
 models\footnote{In many of those cases inefficient inference implies that inference is infeasible at the scale we are interested in.}.
