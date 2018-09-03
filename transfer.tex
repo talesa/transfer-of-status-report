@@ -14,8 +14,8 @@
 
 
 \section{Introduction}
-The first part of the report is a manuscript ``Faithful Inversion of Generative Models for Effective Amortized Inference`` where we introduce NaMI: Natural Minimal I-Map algorithm.
-I have contributed to that work by coding, running, plotting and analyzing Gaussian Mixture Model experiment in the Section 3.3, as well as another experiment that eventually did not make it to the manuscript. 
+The first part of the report is a manuscript of ``Faithful Inversion of Generative Models for Effective Amortized Inference`` where we introduce NaMI: Natural Minimal I-Map algorithm.
+I have contributed to that work by coding, running, plotting and analyzing the Gaussian Mixture Model experiment in the Section 3.3, as well as another experiment that eventually did not make it to the manuscript. 
 I have also participated in the ideation when choosing and designing the experiments and the process of writing and reviewing the manuscript itself.
 
 In this part of the report, I introduce the background knowledge, review the literature around amortized inference and 
@@ -31,17 +31,17 @@ I also present a preliminary schedule for the rest of my DPhil programme.
 Probabilistic machine learning is a branch of machine learning which makes use of probabilistic modelling framework to reason about learning models and for incorporating uncertainty into that process \citep{Ghahramani2015}.
 Its major advantages are the ability to incorporate prior knowledge by making explicit modelling assumptions, the ability to obtain well calibrated uncertainty estimates, and the interpretability of the models.
 The latter is these days a very sought after characteristic, especially as machine learning is starting to pervade the highly regulated domains such as medicine, jurisprudence, finance and autonomous operation of robots, most notably -- autonomous driving.
-The price we pay for those advantages is the often computationally expensive process of learning as well as the risk of model misspecification by making inaccurate assumptions what results in learning inaccurate models.
+The price we pay for those advantages is the often computationally expensive process of learning as well as the risk of model misspecification by making inaccurate assumptions that result in learning inaccurate models.
 
-Learning in probabilistic models boils down to the process called inference -- determining the probability distribution of a quantity/information of interest based the prior belief and the data -- which is the core problem in probabilistic machine learning.
+Learning in probabilistic models boils down to the process called inference -- determining the probability distribution of a quantity/information of interest based on the prior belief and the data -- which is the core problem in probabilistic machine learning.
 In the mathematical terms -- our probabilistic model defines a joint distribution $p(x,y)$ over the hidden (or latent) random variables (RVs) $x$ and the observed RVs $y$.
 The prior beliefs are encoded in the model as so called prior distribution $p(x)$.
 Most often the focal point of probabilistic inference is determining the posterior $p(x|y)$ -- the probability distribution over the hidden RVs $x$ conditioned on the observed value of $y$.
 Bayes' Law, easily the most recognizable equation in Bayesian statistics, dictates how to obtain the posterior $p(x|y) = p(x,y)/p(y)$.
-The challenging part of the entirety of probabilistic inference is estimating the so-called evidence $p(y)$ what requires performing or approximating the integral $\int p(x,y) \text{d}x$.
+The challenging part of the entirety of probabilistic inference is estimating the so-called evidence $p(y)$ that requires performing or approximating the integral $\int p(x,y) \text{d}x$.
 Evaluating such high dimensional integrals can rarely be done analytically (except some special cases like linear Gaussian models) and in general can be arbitrarily difficult.
 This is the fundamental reason for why Bayesian inference is difficult -- it is tightly related to the fundamental challenge of performing high dimensional integration. 
-From now on when referring to `inference` we mean Bayesian inference, as contrasted to non probabilistic inference in other domains of machine learning.
+From now on when referring to ``inference`` we mean Bayesian inference, as contrasted to non probabilistic inference in other domains of machine learning.
 
 % This is not the end of the story -- 
 Often the posterior, or samples representing the posterior, are just an intermediate goal to
@@ -49,22 +49,22 @@ obtain the probability distribution over some quantity of interest which is a fu
 The probability distribution of interest may hence be denoted as $p_g(g|y)$.
 Most often we only seek a point estimate, i.e. the expected value of that function under the posterior $\mu_g=\E_{g \sim p_g(g|y)}[g]=\E_{x \sim p(x|y)}[f(x)]$.
 
-We do have efficient inference methods for certain classes of models, however we lack general purpose inference methods that would be efficient for all the models what often stops us from using more complex probabilistic models.
+We do have efficient inference methods for certain classes of models, however we lack general purpose inference methods that would be efficient for all the models which is, what often stops us from using more complex probabilistic models.
 In many of those cases inefficient inference implies that inference is simply completely infeasible at the scale we are interested in.
 That is the case because algorithms tend to scale unfavorably with the number of data points or dimensions of the problem.
-In the case of big data even linear scaling in the number of data points is difficult to cope with and so we are looking for methods that can do with subsampling a part of the data set at each step - this gave rise to e.g. stochastic variational inference methods \citep{HoffmanEtAl2013}. 
+In the case of big data, even linear scaling in the number of data points is difficult to cope with and so we are looking for methods that can do with subsampling a part of the data set at each step - this gave rise to e.g. stochastic variational inference methods \citep{HoffmanEtAl2013}. 
 
 The topic of efficiency in inference is very broad.
 There are different aspects of efficiency - the two we consider worth pointing out here are the statistical and wall-time efficiency,
 none of them is precisely defined.
-In the context of statistical efficiency being more efficient may refer to many things, for example: 
-when comparing Monte Carlo (MC) methods an estimator having smaller variance then another for a particular sample size is a more statistically efficient one, or
-when comparing Markov chain Monte Carlo (MCMC) algorithms the one having less correlation between consecutive samples than the other is a more statistically efficient one.
+In the context of statistical efficiency, being more efficient may refer to many things, for example: 
+when comparing Monte Carlo (MC) methods, an estimator having smaller variance then another for a particular sample size is the more statistically efficient one, or
+when comparing Markov chain Monte Carlo (MCMC) algorithms the one having less correlation between consecutive samples than the other is the more statistically efficient one.
 However we also need to take into account the computational efficiency of a method - what if the advantage of a higher statistical efficiency of an MCMC method is offset by the fact that generating a sample is more computationally expensive than for less statistically efficient method?
 What if we can further parallelize the less statistically efficient method?
-Suddenly our measure of total efficiency becomes a measure along the lines of `number and autocorrelation of the samples per second under the computational budget of 10CPUs`.
-Yet another aspect of the efficiency of a method is how much user's effort and attention is required to understand it, implement it and tune it (e.g. choose a proposal), although this one is usually not used under the umbrella term `efficiency`,\\
-In this work we will use the word `efficient` relatively vaguely, assessing how a given method behaves in common contemporary problems.
+Suddenly our measure of total efficiency becomes a measure along the lines of ``number and autocorrelation of the samples per second under the computational budget of 10CPUs``.
+Yet another aspect of the efficiency of a method is how much user's effort and attention is required to understand it, implement it and tune it (e.g. choose a proposal), although this one is usually not used under the umbrella term ``efficiency``.\\
+In this work we use the word ``efficient`` as such umbrella term encompassing different aspects of efficiency as relevant to how a given method behaves in common contemporary problems.
 
 
 
@@ -91,21 +91,21 @@ deterministic or even stochastic control flow constructs.
 To support automated inference in any probabilistic model we need general purpose inference algorithms.
 % There exist a few algorithms that support inference in such universal probabilistic programming languages, more about it in \autoref{sec:inference-prob-prog} 
 Even though a few general purpose inference algorithms exist, they do not behave the same way on all models -- their efficiency varies, some are better suited to particular classes of models than others.
-An ideal probabilistic programming system should be able to automatically select the most efficient of the inference methods in its arsenal for the given problem, including not only all of the general purpose algorithms but also more bespoke ones, 
-e.g. if compiler could detect inference in a given model can be run using the expectation maximization algorithm \citep{EM} it should be able to deploy it and yet again, if it is possible derive closed-form solutions for individual steps \citep{Zinkov2017}.
+An ideal probabilistic programming system should be able to automatically select the most efficient of the inference methods in its arsenal for the given problem, including not only all of the general purpose algorithms but also more bespoke ones.
+% For example if a compiler could detect inference in a given model can be run using the expectation maximization algorithm \citep{EM} it should be able to deploy it and yet again, if it is possible derive closed-form solutions for individual steps \citep{Zinkov2017}.
 
-One of the criticisms of probabilistic programming is that it is dishonest to promise users they will be able to specify arbitrary probabilistic models, but not providing the ability to run efficient inference in all of these models.
+One of the criticisms of probabilistic programming is that it is dishonest to promise users that they will be able to specify arbitrary probabilistic models, but not providing the ability to run efficient inference in all of these models.
 It is clear that there is a trade-off between the user's freedom to specify arbitrary models and the efficiency of inference.
 This leads to a spectrum of probabilistic programming systems -- some of them limit the expressivity of the model specification language by appropriate design of language semantics to allow the use of an inference method particularly effective for such constrained class of models, while others strive to provide unconstrained expressivity, possibly at the cost of inference performance.
 
 For this work the most relevant distinction of this kind is into the systems that limit their expressivity to models with finite and deterministic cardinality (the number of random variables is finite and constant between samples from the model), such as Infer.NET \citep{InferNET}, Stan \citep{Stan}, BUGS \citep{WinBUGS,BUGSproject} or JAGS \citep{JAGS}, 
-and so-called `universal probabilistic programming languages`, built on top of existing Turing-complete programming languages, such as Anglican \citep{anglican}, Church \citep{GoodmanEtAl2008}, WebPPL \citep{GoodmanStuhlmuller2014} and Venture \citep{venture},
+and so-called ``universal probabilistic programming languages``, built on top of existing Turing-complete programming languages, such as Anglican \citep{anglican}, Church \citep{GoodmanEtAl2008}, WebPPL \citep{GoodmanStuhlmuller2014} and Venture \citep{venture},
 which allow denotation of models with infinite, stochastic cardinality.
-This work is mostly focusing on the former class of models.
+This work focuses mostly on the former class of models.
 
-Recently there is an upsurge in the development of so-called deep probabilistic programming libraries such as Edward \citep{TranEtAl2016}, Pyro \citep{Pyro2018} and Probtorch \citep{Siddharth2017} which main focus is on stochastic variational inference for deep generative models, and hence they live in programming environments which allow simple access to auto-differentiation necessary for training neural networks.
+Recently there is an upsurge in the development of so-called deep probabilistic programming libraries such as Edward \citep{TranEtAl2016}, Pyro \citep{Pyro2018} and Probtorch \citep{Siddharth2017} whose main focus is on stochastic variational inference for deep generative models, and hence they live in programming environments which allow simple access to auto-differentiation necessary for training neural networks.
 
-Our focus in this work is mostly on approximate inference using Monte Carlo (MC), Markov chain Monte Carlo (MCMC) and variational methods but it is also worth mentioning that there exist probabilistic programming systems which allow or even focus on exact inference using variable elimination, combinatorial search as well as approximate inference using message passing, and others.
+Our focus in this work is mostly on approximate inference using Monte Carlo (MC), Markov chain Monte Carlo (MCMC) and variational methods; but it is also worth mentioning that there exist probabilistic programming systems which allow or even focus on exact inference using variable elimination, combinatorial search as well as approximate inference using message passing, and others.
 
 
 
@@ -113,7 +113,7 @@ Our focus in this work is mostly on approximate inference using Monte Carlo (MC)
 \subsection{Inference in probabilistic programming systems}
 \label{sec:inference-prob-prog}
 
-When discussing approximate inference methods there is a variety of properties we are interested in.
+When discussing approximate inference methods there is a variety of properties in which we are interested.
 The three important ones that need defining are 
 (1)~bias -- the difference between this estimator's expected value and the true value of the parameter being estimated: 
 $\E [\hat{\theta}] - \theta_0$, 
@@ -128,14 +128,14 @@ this property can be also thought of as estimator being asymptotically unbiased 
 
 Our attention is mostly on two broad categories of probabilistic inference algorithms: variational \citep{WainwrightJordan2008} or Monte Carlo based methods \citep{mcbook}.
 The following description of the properties of these methods involves a grand dose of generalization.
-Variational methods are usually not providing consistent estimators and their bias is hard to estimate, but are relatively quick.
-Monte Carlo based methods usually provide consistent estimators, some methods provide unbiased estimators, and we can bound how the variance of the estimator decreases with the growing amount of samples what implies there is an informed way to trade precision for computational cost.
+Variational methods usually do not provide consistent estimators and their bias is hard to estimate, but they are relatively quick.
+Monte Carlo based methods usually provide consistent estimators, some methods provide unbiased estimators, and we can bound how the variance of the estimator decreases with the growing amount of samples which implies there is an informed way to trade precision for computational cost.
 Markov chain Monte Carlo methods provide consistent estimators in the infinite sample size limit, but unlike MC methods they are generally biased after any fixed number of iterations \citep{JacobEtAl2017} and we cannot bound the variance in the same way we can for MC methods.
 Both MC and MCMC methods are usually slower than the variational methods.
-What is more in case of both MC based and variational methods the process of inference needs to be started again from scratch whenever a new set of observed variables (i.e. dataset) $y$ is obtained and we want to determine the posterior for that dataset.  
+What is more, in case of both MC based and variational methods the process of inference needs to be started again from scratch whenever a new set of observed variables (i.e. dataset) $y$ is obtained and we want to determine the posterior for that dataset.  
 
 As mentioned earlier, many of the probabilistic programming systems with limited expressivity of the models make such design choice to ensure the models are amenable to particular classes of inference algorithms. 
-Best examples are STAN which expressivity is limited to Bayesian Networks with no discrete variables to be able to run use No-U-Turn-Sampler-like algorithm \citep{NUTS}, an adaptive variant of Hamiltonian Monte Carlo (HMC) \citep{HMC}, or Infer.NET which is limited to factor graphs to be able to use variational methods such as variational message passing \citep{variationalmessagepassing} and expectation propagation \citep{EP} algorithms.
+Best examples are STAN whose expressivity is limited to Bayesian Networks with no discrete variables to be able to run No-U-Turn-Sampler-like algorithm \citep{NUTS}, an adaptive variant of Hamiltonian Monte Carlo (HMC) \citep{HMC}; or Infer.NET which is limited to factor graphs to be able to run the variational message passing \citep{variationalmessagepassing} and the expectation propagation \citep{EP} algorithms.
 
 There are several MC based general purpose inference algorithms that can be applied to higher order probabilistic programming systems, examples include Interacting Particle Markov Chain Monte Carlo \citep{rainforth2016interacting}, Particle Gibbs, Particle independent Metropolis-Hastings, or Sequential Monte Carlo \citep{WoodEtAl2014}.
 One of the major challenges that those methods must accommodate for is the varying number of random variables between the runs of the program because of the stochastic control flow.  
@@ -151,7 +151,7 @@ We believe inference amortization is one of the possible solutions in these sett
 
 \subsection{Inference amortization}
 
-Inference amortization is a method which allows to significantly accelerate run-time inference, wherein one looks to amortize the cost of inference across different possible datasets
+Inference amortization is a method which allows us to significantly accelerate run-time inference, wherein one looks to amortize the cost of inference across different possible datasets
 by learning a
 function approximator approximating the posterior for a given dataset
 that can be used to assist the inference process
@@ -296,7 +296,7 @@ $p(x,y)=\prod_i p(x_i|\text{Pa}(x_i)) \prod_j p(y_j|\text{Pa}(y_j))$,
 where $\text{Pa}_\mathcal{G}(x_i)$ are the parents of the node $x_i$ according to graphical model $\mathcal{G}$, see \autoref{fig:example1-bn}.
 
 Given a graphical model of the generative model $p(x,y)$, 
-we have to decide about a new graphical model for our inference network $q(x|y)$. 
+we have to decide on a new graphical model for our inference network $q(x|y)$. 
 % We follow the reasoning of \citet{StuhlmullerEtAl2013} and \citet{PaigeWood2016}.
 % The factorization of the approximate posterior $q(x|y)$ reflects the conditional independence assumptions between random variables we impose on the approximate posterior.
 The more conditional independence assumptions we impose on our approximate posterior $q(x|y)$ the easier the problem is computationally, but the less expressive $q(x|y)$ becomes and hence we make a coarser approximation.
@@ -308,8 +308,8 @@ On one end of this spectrum lies the one of coarsest approximations we can make 
 On the other end of this spectrum lies an autoregressive factorization which makes no assumptions since any joint distribution can always be factorized according to the probability chain rule $q(x|y)=\prod^N_iq_i(x_i\,|\,x_{<i},y)$, see \autoref{fig:example1-ar}.
 
 What motivated our work in the first part of this report was the observation by \citet{StuhlmullerEtAl2013} that
-the factorization of the inference network $q(x|y)$ should be constructed such that the joint distribution defined by the original model $p(x, y)$ is identical to that of the new `inverse model` $q(x, y) = q(y)q(x|y)$, i.e. factorization of $q(x|y)$ should not impose conditional independence assumptions on the inverse model than were not present in original factorization on $p(x,y)$.
-If we impose more assumptions than those present in the generative model $p(x,y)$ we can make it impossible for our approximate posterior $q(x|y)$ to match the true posterior $p(x|y)$ no matter how flexible density estimator and how powerful function approximator we use.
+the factorization of the inference network $q(x|y)$ should be constructed such that the joint distribution defined by the original model $p(x, y)$ is identical to that of the new ``inverse model`` $q(x, y) = q(y)q(x|y)$, i.e. factorization of $q(x|y)$ should not impose conditional independence assumptions on the inverse model that were not present in original factorization on $p(x,y)$.
+If we impose more assumptions than those present in the generative model $p(x,y)$ we can make it impossible for our approximate posterior $q(x|y)$ to match the true posterior $p(x|y)$ no matter how flexible a density estimator and how powerful a function approximator we use.
 % In plain words the reason for this is that neural network that determines the parameters for the factor $q_i$ is not given all the necessary inputs (values of other random variables) to reconstruct the true posterior.
 Even when we operate in the ASVI setting and our goal is not learning an accurate inference network but learning the model this effect is undesirable
 % as limited capacity of the inference artifact forces the learnt model to adjust to this inaccurate inference hence limiting the capacity of the model itself, 
@@ -317,7 +317,7 @@ since because of the KL penalty term in the ELBO objective
 $\mathcal{L}(y,q,p)=\log p(y)-KL(q(x|y) || p(x|y)) \le \log p(y)$ \citep{VAE}
 optimizing under these assumptions tends to force the posterior $p_\theta(x|y)$ to satisfy the factorizing assumptions of the variational family $q$ \citep{FIVO}.
 
-\citet{StuhlmullerEtAl2013} propose a heuristic algorithm for such `graphical model inversion` however it does introduce assumptions not present in the generative model.
+\citet{StuhlmullerEtAl2013} propose a heuristic algorithm for such ``graphical model inversion`` however it does introduce assumptions not present in the generative model.
 To alleviate that we introduce a NaMI algorithm that uses the graphical model $\mathcal{G}$ we assume for the generative model $p$ to search for a graphical model $\mathcal{H}$ for the approximate posterior which introduces as many assumptions as possible while not introducing any assumptions not present in the $p$, and hence it does not limit the expressivity of $q$ more than what is required to be able to match the true posterior. 
 Compare \autoref{fig:example1-inverse} with \autoref{fig:example1-brooks}.
 
@@ -358,7 +358,7 @@ However, in many cases this distribution might not be flexible enough to match t
 For example, for $x \in \mathbb{R}$ a mixture of Gaussians is a more flexible choice than a single Gaussian.
 
 An alternative to using a parametric distribution might be a recently developed family of flexible density estimators called normalizing flows \citep{RezendeMohamed2015,IAF,MAF}.
-Instead of requiring the distribution to have a closed form density expression normalizing flows take a sample $z$ from some tractable distribution, commonly standard normal, and transform it using a bijective (i.e. invertible) transformation $f: \mathbb{R} \mapsto \mathbb{R}$ (or series of such transformations) into a much more complex, possibly multi-modal, random variable $x=f(z)$.
+Instead of requiring the distribution to have a closed form density expression, normalizing flows take a sample $z$ from some tractable distribution, commonly standard normal, and transform it using a bijective (i.e. invertible) transformation $f: \mathbb{R} \mapsto \mathbb{R}$ (or series of such transformations) into a much more complex, possibly multi-modal, random variable $x=f(z)$.
 We can still evaluate the probability density at any given point $x$ since we are able to compute the determinant of the Jacobian and apply the change of variables formula between the source of randomness $z$ and the final variable $x$ according to 
 $p_x(x) = p_z(z) \left|
     \mathrm{det} \frac{
@@ -385,7 +385,7 @@ When using either the parametric distribution or normalizing flow as the proposa
 Usually the function appoximator is a neural network and so our decision amounts to choosing its' architecture.
 
 The probabilistic program specifies all of the deterministic transformations applied to the samples of the random variables in the generative model
-what creates an opportunity to leverage that information in designing the architecture of the neural network by attempting to invert the computation in the generative model \citep{TavaresEtAl2016,TavaresEtAl2017}.
+that creates an opportunity to leverage that information in designing the architecture of the neural network by attempting to invert the computation in the generative model \citep{TavaresEtAl2016,TavaresEtAl2017}.
 It is yet unclear if this approach will prove of practical use in the inference compilation setting.
 
 Another possible route to automate the selection of the architecture would be to look into the neural architecture search literature \citep{ElskenEtAl2018,ZophLe2017,pham18a}.
@@ -493,7 +493,7 @@ and in case of rejection to resubmit it to ICML 2019.
 % $f(x;\theta)$ at these points.  Therefore by coupling the AMCI approach
 % with the inference compilation approach introduced for Anglican
 % in~\cite{LeEtAl2016}, we have everything required for
-% training an ``integration compilation'' artifact.
+% training an ````integration compilation'' artifact.
 % 
 % The syntax used to identify which variables correspond to
 % $\theta$ is necessary because
@@ -529,11 +529,13 @@ At the moment NaMI algorithm is forced to choose among multiple plausible faithf
 % At the moment NaMI computes topological or reverse-topological sort orders, solves the draws between different orderings according to min-fill heuristic (i.e. minimizes the size of the cliques in the graph), computes two inverses and suggests to evaluate the performance of both.
 My idea is to extend our current method to pick the factorization in a data-driven rather than a heuristic way.
 At a high level the new method would draw samples from the generative model and then use kernel density estimation to examine the form of the factors under different plausible factorizations. 
-The `simpler` the forms of the factors are the easier they are to target with proposal distributions.
+The ``simpler`` the forms of the factors are, the easier those factors are to be fitted with a proposal density estimator.
 If a suitable measure of simplicity of a factor distribution is established it might be possible to further automate the process of choosing a suitable inference network factorization.
 
 
-\subsubsection*{D \quad Applications showcasing the benefits of NaMI for models with rich structure}
+
+
+\subsubsection*{D \quad Applications\hspace{.4em}showcasing\hspace{.4em}the\hspace{.4em}benefits\hspace{.4em}of\hspace{.4em}NaMI\hspace{.4em}for models\hspace{.4em}with\hspace{.4em}rich\hspace{.4em}structure}
 At the moment we are lacking compelling examples showcasing the benefits of using the NaMI method.
 We expect that our method yields most benefits for models with rich structure, and such can be found in the domains where probabilistic modelling is a prevalent tool.
 My plan is to seek suitable applications by looking for collaborators in engineering, finance, medicine or physical sciences.
