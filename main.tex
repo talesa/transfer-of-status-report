@@ -16,7 +16,7 @@
 
 This report consists of three parts:
 \begin{itemize}
-\item Description of the projects I have worked on and I intend to use for my thesis,
+\item Description of the projects I worked on and I intend to use for my thesis,
 \item Planned steps to completion of my thesis,
 \item The manuscript of my paper \emph{Amortized Monte Carlo Integration} published at ICML 2019.
 \end{itemize}
@@ -48,9 +48,9 @@ In the following section I will briefly describe each of those pieces of work, m
 
 \subsubsection{Faithful Inversion of Generative Models for Effective Amortized Inference}% \citep{Webb2018faithful}}
 Work published at NeurIPS 2019, this was my first project after starting my PhD and I was the second author.
-I have used this work in my Transfer of Status report.
-I have contributed by coding, running, and analyzing experiments, including some that eventually did not make it to the manuscript. 
-I have participated in the design of the experiments and the process of writing and reviewing the manuscript.
+I used this work in my Transfer of Status report.
+I contributed to this work by coding, running, and analyzing experiments, including some that eventually did not make it to the manuscript. 
+I participated in the design of the experiments and the process of writing and reviewing the manuscript.
 
 \subsubsection{Amortized Monte Carlo Integration}% \citep{Golinski2019amci}}
 
@@ -59,10 +59,10 @@ This manuscript constitutes the second part of this report -- you will find it t
 This work was published at the International Conference on Machine Learning (ICML) 2019 and received the Best Paper Runner Up award, one of approximately ten awarded each year.
 
 For this project I was the first author and shared the equal authorship with my supervisor, Tom Rainforth.
-My contributions were as follows: we have been developing the idea jointly with Tom; 
-we have been jointly discussing and deciding on the design of the experiments, which I have singlehandedly coded and run; 
+My contributions are as follows: we developed the idea jointly with Tom; 
+we jointly discussed and decided on the design of the experiments, which I coded and run; 
 we shared the effort of writing up of the manuscript for the conference submission and the rebuttal.
-I have also singlehandedly refactored and opensourced the code for the project after the publication.
+I refactored and opensourced the code for the project after the publication.
 
 \subsubsection{Target–Aware Bayesian Inference: How to Beat Optimal Conventional Estimators}% \citep{Rainforth2020tabi}}
 
@@ -70,20 +70,25 @@ This work is an extension of my earlier paper \emph{Amortized Monte Carlo Integr
 and
 was published in the Journal of Machine Learning Research (JMLR).
 
-For this work, I was the second author and shared the equal authorship with Tom Rainforth who became the first author on the manuscript.
-Contributions-wise: we have discussed the ideas for the extension of the AMCI paper together with Tom, 
-and one of the two ideas that ended up being the major extension warranting the publication in the JMLR
-(applying the breakdown of the standard importance sampling estimator into multiple parts, suggested in the AMCI paper, but in the Adaptive Importance Sampling rather than Amortized Inference setting)
-was an idea that we came up with together.
-The other of those ideas, the ability to utilize any marginal likelihood estimator to calculate the estimates required for that estimator breakdown, was developed entirely by Tom. 
+Since this work is an extension of AMCI, its core is the key idea of the AMCI paper we developed together with Tom.
+The JMLR paper offered two extensions beyond what was presented in the AMCI paper.
+One of those ideas was an idea we came up with together, and the other was Tom's idea.
 The execution of both ideas, including the derivation of the theoretical results and the experimental work, has been accomplished entirely by Tom and Sheheryar Zaidi, 
 because at the time I have been away on an internship at Qualcomm AI Research in Amsterdam.
+For this reason, I was the second author and shared the equal authorship with Tom Rainforth who became the first author on this manuscript.
+
+% Contributions-wise: we have discussed the ideas for the extension of the AMCI paper together with Tom, 
+% and one of the two ideas that ended up being the major extension warranting the publication in the JMLR
+% (applying the breakdown of the standard importance sampling estimator into multiple parts, suggested in the AMCI paper, but in the Adaptive Importance Sampling rather than Amortized Inference setting)
+% was an idea that we came up with together.
+% The other of those ideas, the ability to utilize any marginal likelihood estimator to calculate the estimates required for that estimator breakdown, was developed entirely by Tom. 
+
 
 
 \subsubsection{Feedback Recurrent Autoencoder for Video Compression}% \citep{Golinski2020feedback}}
-I have spent 6 months (September 2019 - March 2020) on an internship at Qualcomm AI Research in Amsterdam where I have worked on neural video compression.
+I spent 6 months (September 2019 - March 2020) on an internship at Qualcomm AI Research in Amsterdam where I worked on neural video compression.
 
-The output of my internship has been a manuscript that we have first submitted to the European Conference on Computer Vision (ECCV) and received a rejection, and now we have resubmitted it to the Asian Conference on Computer Vision (ACCV) and we are awaiting the reviews.
+The output of my internship has been a manuscript that we first submitted to the European Conference on Computer Vision (ECCV) and received a rejection, and now we have resubmitted it to the Asian Conference on Computer Vision (ACCV) and we are awaiting the reviews.
 I am the first of three equal first authors.
 
 The nature of our contributions ended up being primarily empirical advances in the design of deep learning architecture for neural video compression.
@@ -99,12 +104,14 @@ This work explores using novel, recent methods for performing constrained optimi
 used in some normalizing flows, particularly Sylvester Normalizing Flows \citep{vandenBerg2018sylvester}.
 The preliminary manuscript has been published at the ICML 2019 Workshop on Invertible Neural Networks, Normalizing Flows, and Explicit Likelihood Models, and it has been already noticed by the community and cited 5 times at the moment of writing this report.
 I am the first of two equal first authors.
-We have submitted an extended version of the manuscript to NeurIPS 2019 but it was rejected.
+We submitted an extended version of the manuscript to NeurIPS 2019 but it was rejected.
 % I could not have worked on this project since August 2019 because of my internship at Qualcomm, and in March when I have finished the internship I have been working on opensourcing
 At the moment, I am working on extending the empirical investigation to be able to resubmit the paper to one of the conference venues.
 I am intending to include this paper in my thesis. 
 
-The relevance of this paper from the fact that normalizing flows are often used as a flexible approximate posterior parameteric probability distribution in amortized variational inference setting.
+Contributions-wise: I initiated the project, coded and run the experiments, and written most of the manuscript.
+
+% The relevance of this paper from the fact that normalizing flows are often used as a flexible approximate posterior parameteric probability distribution in amortized variational inference setting.
 
 
 \subsection{Projects in the exploration phase}
@@ -112,7 +119,7 @@ The relevance of this paper from the fact that normalizing flows are often used 
 \subsubsection{Lossless Compression using Augmented-Space Normalizing Flows}
 This project is meant to explore applying novel variants of normalizing flows to the task of lossless compression.
 
-At the moment, we have already formulated a lossless compression scheme for the Continuously Indexed Normalising Flows \citep{Cornish2020cif} through a combination of local bits-back coding \citep{Ho2019local} and BB-ANS \citep{Townsend2019bbans}.
+At the moment, we already formulated a lossless compression scheme for the Continuously Indexed Normalising Flows \citep{Cornish2020cif} through a combination of local bits-back coding \citep{Ho2019local} and BB-ANS \citep{Townsend2019bbans}.
 The next step for us is to explore the ways flows fitting into the SurVAE framework \citep{Nielsen2020survae} can be used for the purpose of lossless data compression.
 
 I believe that our current contribution, if we support it by experimental evidence, warrants a workshop publication.
@@ -123,13 +130,14 @@ Most likely, if we maintain the current levels of engagement in the project, I w
 \subsubsection{Meta-learning for Probabilistic Inference}
 This project is meant to explore the opportunities to leverage progress in meta-learning literature for the purpose of probabilistic inference.
 I am currently at the point of literature review.
-The first promising direction I have noticed is using a learned optimization method, rather than gradient descent, to refine the proposals in Adaptive Importance Sampling, as has been previously done for Variational Inference in VAEs \citep{Marino2018iterative}.
-For now, I am pursuing this project mostly by myself, with some input from my supervisor.
+The first promising direction I have noticed so far is using a learned optimization method, rather than gradient descent, to refine the proposals in Adaptive Importance Sampling, as has been previously done for Variational Inference in VAEs \citep{Marino2018iterative}.
+For now, I am pursuing this project mostly by myself, with input from my supervisor.
 
 
 \section{Planned steps to completion}
 
 I am planning to finish the experiments and the writeup of \emph{Improving Normalizing Flows via Better Orthogonal Parameterizations} by the submission date of either ICLR 2021 or ICML 2021.
+
 
 I also expect at least one of the projects, 
 \emph{Lossless Compression using Augmented-Space Normalizing Flows} or
